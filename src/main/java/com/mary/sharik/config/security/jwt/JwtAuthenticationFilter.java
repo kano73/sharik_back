@@ -30,8 +30,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, @NotNull HttpServletResponse response,
-                                   @NotNull FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
         // Get authorization header
         final String authHeader = request.getHeader("Authorization");
 
@@ -43,22 +43,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // Extract token
         final String token = authHeader.substring(7);
 
-        // Check if token is blacklisted in Redis
-        Boolean isBlacklisted = redisTemplate.hasKey("BL_" + token);
-        if (isBlacklisted) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
-
         // Validate token
         if (!jwtTokenUtil.isTokenValid(token)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Get claims and set authentication
+        // Get claims
         Claims claims = jwtTokenUtil.extractAllClaims(token);
-        if (claims != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (claims == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Проверяем, что это access токен
+        String tokenType = claims.get("token_type", String.class);
+        if (!"access".equals(tokenType)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Check if token is blacklisted in Redis
+        if (redisTemplate.hasKey("BL_" + token)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+
+        // Set authentication
+        if (SecurityContextHolder.getContext().getAuthentication() == null) {
             String username = claims.getSubject();
             MyUserDetails userDetails = (MyUserDetails) userDetailsService.loadUserByUsername(username);
 

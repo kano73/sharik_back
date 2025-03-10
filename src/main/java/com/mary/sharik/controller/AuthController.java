@@ -9,6 +9,7 @@ import com.mary.sharik.model.jwt.AuthRequest;
 import com.mary.sharik.model.jwt.RefreshTokenRequest;
 import com.mary.sharik.service.MyUserDetailsService;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,5 +115,24 @@ public class AuthController {
         tokenStoreService.storeRefreshToken(refreshedToken, user.getId());
 
         return ResponseEntity.ok(new AuthResponse(token, refreshedToken));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+
+            // Получаем ID пользователя из токена
+            Claims claims = jwtTokenUtil.extractAllClaims(token);
+            if (claims != null) {
+                String userId = claims.get("id", String.class);
+
+                // Инвалидируем все токены пользователя
+                tokenStoreService.invalidateAllUserTokens(userId);
+                return ResponseEntity.ok("Logged out successfully");
+            }
+        }
+        return ResponseEntity.badRequest().body("No token provided");
     }
 }
