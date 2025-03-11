@@ -2,11 +2,14 @@ package com.mary.sharik.service;
 
 import com.mary.sharik.config.security.jwt.JwtTokenUtil;
 import com.mary.sharik.config.security.jwt.TokenStoreService;
+import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.jwt.AuthRequest;
 import com.mary.sharik.model.jwt.AuthResponse;
 import com.mary.sharik.model.jwt.RefreshTokenRequest;
 import io.jsonwebtoken.Claims;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,21 +18,14 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class AuthService {
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final RedisTemplate<String, ProductAndQuantity> redisTemplate;
     private final JwtTokenUtil jwtTokenUtil;
     private final MyUserService myUserService;
     private final TokenStoreService tokenStoreService;
     private final AuthenticationManager authenticationManager;
-
-    public AuthService(RedisTemplate<Object, Object> redisTemplate, JwtTokenUtil jwtTokenUtil, MyUserService myUserService, TokenStoreService tokenStoreService, AuthenticationManager authenticationManager) {
-        this.redisTemplate = redisTemplate;
-        this.jwtTokenUtil = jwtTokenUtil;
-        this.myUserService = myUserService;
-        this.tokenStoreService = tokenStoreService;
-        this.authenticationManager = authenticationManager;
-    }
 
     public ResponseEntity<?> updateToken(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
@@ -41,7 +37,7 @@ public class AuthService {
         }
 
         // Проверяем валидность refresh токена
-        if (!jwtTokenUtil.isTokenValid(refreshToken)) {
+        if (jwtTokenUtil.isTokenInvalid(refreshToken)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
         }
 
@@ -77,13 +73,13 @@ public class AuthService {
     public ResponseEntity<?> refreshAndAccess(AuthRequest request) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsernameOrEmail(), request.getPassword())
+                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
-        MyUser user = myUserService.findByUsernameOrEmail(request.getUsernameOrEmail());
+        MyUser user = myUserService.findByEmail(request.getEmail());
 
         String token = jwtTokenUtil.generateAccessToken(
                 user.getId(),
@@ -98,5 +94,23 @@ public class AuthService {
         tokenStoreService.storeRefreshToken(refreshedToken, user.getId());
 
         return ResponseEntity.ok(new AuthResponse(token, refreshedToken));
+    }
+
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+
+            // Получаем ID пользователя из токена
+            Claims claims = jwtTokenUtil.extractAllClaims(token);
+            if (claims != null) {
+                String userId = claims.get("id", String.class);
+
+                // Инвалидируем все токены пользователя
+                tokenStoreService.invalidateAllUserTokens(userId);
+                return ResponseEntity.ok("Logged out successfully");
+            }
+        }
+        return ResponseEntity.badRequest().body("No token provided");
     }
 }

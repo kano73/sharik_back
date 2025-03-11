@@ -1,7 +1,8 @@
 package com.mary.sharik.controller;
 
-import com.mary.sharik.model.dto.ActionWithCartDTO;
-import com.mary.sharik.model.entity.Cart;
+import com.mary.sharik.model.dto.request.ActionWithCartDTO;
+import com.mary.sharik.model.dto.storage.ProductAndQuantity;
+import com.mary.sharik.model.entity.OrdersHistory;
 import com.mary.sharik.service.CartService;
 import com.mongodb.lang.Nullable;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class CartController {
 
     @PostMapping("/add")
     public boolean addItem(@RequestBody ActionWithCartDTO actionWithCartDTO) {
-        cartService.addItemToCart(actionWithCartDTO.getProductId(), actionWithCartDTO.getQuantity());
+        cartService.addToCart(actionWithCartDTO.getProductId(), actionWithCartDTO.getQuantity());
         return true;
     }
 
@@ -39,13 +40,13 @@ public class CartController {
         return true;
     }
 
-    @GetMapping("/my_cart")
-    public Cart.ActiveCart getActiveCart() {
-        return cartService.getActiveCart();
+    @GetMapping("/cart")
+    public List<ProductAndQuantity> getActiveCart() {
+        return cartService.getCart();
     }
 
-    @GetMapping("/my_history")
-    public List<Cart.Order> getHistory() {
+    @GetMapping("/history")
+    public List<OrdersHistory.Order> getHistory() {
         return cartService.getHistory();
     }
 }

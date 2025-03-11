@@ -1,4 +1,4 @@
-package com.mary.sharik.model.dto;
+package com.mary.sharik.model.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -9,11 +9,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MyUserRegisterDTO {
-    @NotBlank
     @Size(min = 1, max = 500)
     private String firstName;
 
-    @NotBlank
     @Size(min = 1, max = 500)
     private String lastName;
 
@@ -27,6 +25,5 @@ public class MyUserRegisterDTO {
     @Size(min = 3, max = 200)
     private String email;
 
-    @NotBlank
     private String address;
 }

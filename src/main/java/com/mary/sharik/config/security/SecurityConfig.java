@@ -3,7 +3,6 @@ package com.mary.sharik.config.security;
 import com.mary.sharik.config.security.jwt.JwtAuthenticationFilter;
 import com.mary.sharik.service.MyUserDetailsService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;

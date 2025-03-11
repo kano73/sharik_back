@@ -3,10 +3,13 @@ package com.mary.sharik.model.entity;
 import com.mary.sharik.model.enums.RoleEnum;
 import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 
-@Data
+@Getter
+@Setter
 @Document(collection = "users")
 public class MyUser {
     @Id

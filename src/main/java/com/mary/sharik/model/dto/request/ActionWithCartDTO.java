@@ -1,4 +1,4 @@
-package com.mary.sharik.model.dto;
+package com.mary.sharik.model.dto.request;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,4 +1,4 @@
-package com.mary.sharik.model.dto;
+package com.mary.sharik.model.dto.request;
 
 import com.mary.sharik.model.enums.SortProductByEnum;
 import jakarta.persistence.EnumType;
@@ -14,7 +14,7 @@ import java.util.List;
 @Setter
 public class ProductSearchFilterDTO {
     @Size(min = 2, max = 200,message = "name length must be greater than 2 and less than 200")
-    private String nameOrDescription;
+    private String nameAndDescription;
 
     @DecimalMin("0.01")
     private Double priceFrom;
@@ -31,4 +31,17 @@ public class ProductSearchFilterDTO {
     private SortProductByEnum sortBy = SortProductByEnum.NAME;
 
     private Sort.Direction sortDirection = Sort.Direction.ASC;
+
+    @Override
+    public String toString() {
+        return "ProductSearchFilterDTO{" +
+                "nameOrDescription='" + nameAndDescription + '\'' +
+                ", priceFrom=" + priceFrom +
+                ", priceTo=" + priceTo +
+                ", categories=" + categories +
+                ", page=" + page +
+                ", sortBy=" + sortBy +
+                ", sortDirection=" + sortDirection +
+                '}';
+    }
 }
