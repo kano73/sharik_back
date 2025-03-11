@@ -5,11 +5,12 @@ import com.mary.sharik.model.dto.MyUserRegisterDTO;
 import com.mary.sharik.service.MyUserService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RestController
 public class MyUserController {
 

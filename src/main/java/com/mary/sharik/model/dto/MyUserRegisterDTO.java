@@ -14,5 +14,7 @@ public class MyUserRegisterDTO {
     @NotBlank
     @Size(min = 2, max = 20)
     private String password;
+    @NotBlank
+    @Size(min = 3, max = 200)
     private String email;
 }

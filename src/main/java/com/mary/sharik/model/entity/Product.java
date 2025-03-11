@@ -12,8 +12,8 @@ public class Product {
     @Id
     private String id;
     private String name;
-    private Double price;
-    private Double amountLeft;
+    private Integer price;
+    private Integer amountLeft;
     private String description;
     private String imageUrl;
     private List<String> categories;
