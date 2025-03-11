@@ -35,9 +35,11 @@ public class DataInitializer implements ApplicationRunner {
     }
 
     private void addAdmin() {
-        if (userRepository.findByUsernameEqualsIgnoreCase("MAIN-ADMIN").isEmpty()) {
+        String adminMail = "admin.main@mail.com";
+        if (userRepository.findByEmailEqualsIgnoreCase(adminMail).isEmpty()) {
             MyUser admin = new MyUser();
-            admin.setUsername("MAIN-ADMIN");
+            admin.setFirstName("MAIN-ADMIN");
+            admin.setEmail(adminMail);
             admin.setPassword(passwordEncoder.encode(password));
             admin.setRole(RoleEnum.ADMIN);
             userRepository.save(admin);
@@ -57,6 +59,7 @@ public class DataInitializer implements ApplicationRunner {
             product.setDescription("Description " + i);
             product.setPrice(random.nextInt(1000));
             product.setAmountLeft(random.nextInt(10));
+            product.setAvailable(true);
 
             List<String> categoriesOfProduct = new ArrayList<>();
             for (String category : categories) {

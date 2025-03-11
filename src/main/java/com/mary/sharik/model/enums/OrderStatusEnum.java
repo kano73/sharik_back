@@ -1,13 +1,12 @@
 package com.mary.sharik.model.enums;
 
 public enum OrderStatusEnum {
-    CONFIRMED,        // Confirmed payment
+    CREATED,
     PROCESSING,       // In progress (assembly, packaging)
-    SHIPPED,          // Shipped to the customer
+    SHIPPING,          // Shipped to the customer
     DELIVERED,        // Successfully delivered
 
-    CANCELLED,        // Cancelled by the customer
-    RETURN_REQUESTED, // Return requested
-    RETURNED,         // Returned and accepted
-    FAILED            // Payment or order processing failed
+    ANNULLED, // Return requested
+    REFUNDED,
+    CANCELLED // empty cart
 }

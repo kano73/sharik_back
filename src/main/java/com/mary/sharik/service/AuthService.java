@@ -53,7 +53,6 @@ public class AuthService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token type");
         }
 
-        String username = claims.getSubject();
         String userId = claims.get("id", String.class);
 
         // Загружаем данные пользователя для получения его роли
@@ -61,12 +60,10 @@ public class AuthService {
 
         // Генерируем новый access токен
         String newAccessToken = jwtTokenUtil.generateAccessToken(
-                username,
                 userId,
                 user.getRole()
         );
-        final String refreshedToken = jwtTokenUtil.generateRefreshToken(
-                user.getUsername(),
+        String refreshedToken = jwtTokenUtil.generateRefreshToken(
                 user.getId()
         );
 
@@ -88,13 +85,11 @@ public class AuthService {
 
         MyUser user = myUserService.findByUsernameOrEmail(request.getUsernameOrEmail());
 
-        final String token = jwtTokenUtil.generateAccessToken(
-                user.getUsername(),
+        String token = jwtTokenUtil.generateAccessToken(
                 user.getId(),
                 user.getRole()
         );
-        final String refreshedToken = jwtTokenUtil.generateRefreshToken(
-                user.getUsername(),
+        String refreshedToken = jwtTokenUtil.generateRefreshToken(
                 user.getId()
         );
 

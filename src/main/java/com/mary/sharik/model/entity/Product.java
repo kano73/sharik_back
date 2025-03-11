@@ -17,4 +17,5 @@ public class Product {
     private String description;
     private String imageUrl;
     private List<String> categories;
+    private boolean isAvailable;
 }

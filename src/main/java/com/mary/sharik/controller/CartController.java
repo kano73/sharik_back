@@ -1,9 +1,13 @@
 package com.mary.sharik.controller;
 
+import com.mary.sharik.model.dto.ActionWithCartDTO;
 import com.mary.sharik.model.entity.Cart;
 import com.mary.sharik.service.CartService;
+import com.mongodb.lang.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -11,18 +15,37 @@ public class CartController {
 
     private final CartService cartService;
 
+    @DeleteMapping("/empty_cart")
+    public boolean emptyCart() {
+        cartService.emptyCart();
+        return true;
+    }
+
     @PostMapping("/add")
-    public void addItem(@RequestParam String productId, @RequestParam int quantity) {
-        cartService.addItemToCart(productId, quantity);
+    public boolean addItem(@RequestBody ActionWithCartDTO actionWithCartDTO) {
+        cartService.addItemToCart(actionWithCartDTO.getProductId(), actionWithCartDTO.getQuantity());
+        return true;
     }
 
-    @PostMapping("/order")
-    public void completeOrder(@RequestBody String address) {
-        cartService.completeOrder(address);
+    @DeleteMapping("/remove")
+    public boolean reduceAmount(@RequestBody ActionWithCartDTO actionWithCartDTO) {
+        cartService.reduceAmountOrDelete(actionWithCartDTO);
+        return true;
     }
 
-    @GetMapping("/{userId}")
-    public Cart getCart(@PathVariable String userId) {
-        return cartService.getOrCreateCart(userId);
+    @PostMapping("/make_order")
+    public boolean completeOrder(@RequestBody @Nullable String customAddress) {
+        cartService.makeOrder(customAddress);
+        return true;
+    }
+
+    @GetMapping("/my_cart")
+    public Cart.ActiveCart getActiveCart() {
+        return cartService.getActiveCart();
+    }
+
+    @GetMapping("/my_history")
+    public List<Cart.Order> getHistory() {
+        return cartService.getHistory();
     }
 }

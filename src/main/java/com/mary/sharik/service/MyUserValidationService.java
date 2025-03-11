@@ -14,11 +14,8 @@ public class MyUserValidationService {
     }
 
     public void credentialsUniqueOrThrow(MyUser myUser) {
-        if(myUserRepository.existsByUsernameEqualsIgnoreCase(myUser.getUsername())) {
-            throw new CredentialsNotUniqueExceptions("username already exists");
-        }
         if(myUserRepository.existsByEmailEqualsIgnoreCase(myUser.getEmail())){
-            throw new CredentialsNotUniqueExceptions("email already exists");
+            throw new CredentialsNotUniqueExceptions("email already in use");
         }
     }
 }

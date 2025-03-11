@@ -20,7 +20,10 @@ public class MyUserService {
 
     public void register(MyUserRegisterDTO dto){
         MyUser myUser = new MyUser();
-        myUser.setUsername(dto.getUsername());
+        myUser.setFirstName(dto.getFirstName());
+        myUser.setLastName(dto.getLastName());
+        myUser.setEmail(dto.getEmail());
+        myUser.setAddress(dto.getAddress());
         myUser.setPassword(passwordEncoder.encode(dto.getPassword()));
         myUser.setRole(RoleEnum.USER);
 
@@ -34,9 +37,8 @@ public class MyUserService {
                 new NoDataFoundException("No user found with id:" + userId));
     }
 
-    public MyUser findByUsernameOrEmail(String usernameOrEmail) {
-        return myUserRepository.findByUsernameEqualsIgnoreCase(usernameOrEmail)
-                .or(() -> myUserRepository.findByEmailEqualsIgnoreCase(usernameOrEmail))
-                .orElseThrow(() -> new UsernameNotFoundException("User not found : " + usernameOrEmail));
+    public MyUser findByUsernameOrEmail(String email) {
+        return myUserRepository.findByEmailEqualsIgnoreCase(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found : " + email));
     }
 }

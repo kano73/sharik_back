@@ -19,11 +19,10 @@ public class JwtTokenUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    public String generateAccessToken(String username, String id, RoleEnum role) {
+    public String generateAccessToken(String id, RoleEnum role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
         claims.put("role", role.name());
-        claims.put("sub", username);
         claims.put("iat", new Date());
         // 10 hour
         long expirationTime = 36_000_000;
@@ -39,10 +38,9 @@ public class JwtTokenUtil {
         return builder.compact();
     }
 
-    public String generateRefreshToken(String username, String id) {
+    public String generateRefreshToken(String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
-        claims.put("sub", username);
         claims.put("token_type", "refresh");
         claims.put("iat", new Date());
         // 7 days
