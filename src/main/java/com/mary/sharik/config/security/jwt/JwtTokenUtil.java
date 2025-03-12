@@ -54,7 +54,7 @@ public class JwtTokenUtil {
         return builder.compact();
     }
 
-    public boolean isTokenValid(String token) {
+    public boolean isTokenInvalid(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
 
@@ -63,9 +63,9 @@ public class JwtTokenUtil {
                     .build()
                     .parseSignedClaims(token).getPayload();
 
-            return !claims.getExpiration().before(new Date());
+            return claims.getExpiration().before(new Date());
         } catch (Exception e) {
-            return false;
+            return true;
         }
     }
 

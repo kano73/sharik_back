@@ -126,26 +126,25 @@ public class CartService {
         redisTemplate.delete(CART_KEY_PREFIX + user.getId());
         ordersHistoryRepository.save(ordersHistory);
     }
+
 //    mongo
 
-//    todo: deal with mess here
+    public List<OrdersHistory.Order> getOrdersHistory() {
+        String userId = authenticatedMyUserService.getCurrentUserAuthenticated().getId();
+        return getOrdersHistoryByUserId(userId);
+    }
 
-    public OrdersHistory getHistory(String userId) {
+    public List<OrdersHistory.Order> getOrdersHistoryByUserId(String userId) {
+        return getHistory(userId).getOrders();
+    }
+
+    private OrdersHistory getHistory(String userId) {
         if(myUserRepository.findById(userId).isEmpty()) {
             throw new NoDataFoundException("No user found with id " + userId);
         }
         return ordersHistoryRepository.findByUserId(userId)
                 .orElseThrow(()->
                         new NoDataFoundException("No history found for user with id: " + userId));
-    }
-
-    public List<OrdersHistory.Order> getHistory() {
-        String userId = authenticatedMyUserService.getCurrentUserAuthenticated().getId();
-        return getHistoryByUserId(userId);
-    }
-
-    public List<OrdersHistory.Order> getHistoryByUserId(String userId) {
-        return getHistory(userId).getOrders();
     }
 
     public List<OrdersHistory> getWholeHistory(@NotBlank @Min(1) Integer page) {

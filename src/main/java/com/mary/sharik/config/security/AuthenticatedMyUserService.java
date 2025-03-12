@@ -16,8 +16,8 @@ public class AuthenticatedMyUserService {
             throw new NoDataFoundException("Please login");
         }
 
-        if (authentication.getPrincipal() instanceof MyUserDetails userDetails) {
-            return userDetails.getMyUser();
+        if (authentication.getPrincipal() instanceof MyUserDetails(MyUser myUser)) {
+            return myUser;
         }else {
             throw new NoDataFoundException("Please login");
         }

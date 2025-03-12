@@ -1,8 +1,6 @@
 package com.mary.sharik.model.details;
 
 import com.mary.sharik.model.entity.MyUser;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,11 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.List;
 
-@Getter
-@RequiredArgsConstructor
-public class MyUserDetails implements UserDetails{
-
-    private final MyUser myUser;
+public record MyUserDetails(MyUser myUser) implements UserDetails {
 
     @Override
     public String getPassword() {

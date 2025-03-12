@@ -3,7 +3,6 @@ package com.mary.sharik.service;
 import com.mary.sharik.model.details.MyUserDetails;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.repository.MyUserRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

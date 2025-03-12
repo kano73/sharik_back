@@ -36,7 +36,7 @@ public class AdminPanelController {
 
     @GetMapping("/history_of")
     public List<OrdersHistory.Order> getHistory(@RequestParam @NotBlank String userId) {
-        return cartService.getHistoryByUserId(userId);
+        return cartService.getOrdersHistoryByUserId(userId);
     }
 
     @GetMapping("/all_history")

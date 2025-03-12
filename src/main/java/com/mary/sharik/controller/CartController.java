@@ -47,6 +47,6 @@ public class CartController {
 
     @GetMapping("/history")
     public List<OrdersHistory.Order> getHistory() {
-        return cartService.getHistory();
+        return cartService.getOrdersHistory();
     }
 }
