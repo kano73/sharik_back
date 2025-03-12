@@ -5,18 +5,16 @@ import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.service.ProductService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 public class ProductController {
 
     private final ProductService productService;
-
-    public ProductController(ProductService productService) {
-        this.productService = productService;
-    }
 
     @PostMapping("/products")
     public List<Product> getProducts(@RequestBody(required = false) @Valid ProductSearchFilterDTO dto) {
