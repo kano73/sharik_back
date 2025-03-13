@@ -11,7 +11,9 @@ import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -55,19 +57,15 @@ public class AuthService {
         MyUser user = myUserService.findById(userId);
 
         // Генерируем новый access токен
-        String newAccessToken = jwtTokenUtil.generateAccessToken(
+        String token = jwtTokenUtil.generateAccessToken(
                 userId,
                 user.getRole()
         );
-        String refreshedToken = jwtTokenUtil.generateRefreshToken(
+        String newRefreshToken = jwtTokenUtil.generateRefreshToken(
                 user.getId()
         );
 
-        // Сохраняем новый access токен
-        tokenStoreService.storeAccessToken(newAccessToken, userId);
-        tokenStoreService.storeRefreshToken(refreshedToken, userId);
-
-        return ResponseEntity.ok(new AuthResponse(newAccessToken, refreshedToken));
+        return getResponseWithTokens(token, newRefreshToken);
     }
 
     public ResponseEntity<?> refreshAndAccess(AuthRequest request) {
@@ -85,15 +83,32 @@ public class AuthService {
                 user.getId(),
                 user.getRole()
         );
-        String refreshedToken = jwtTokenUtil.generateRefreshToken(
+        String refreshToken = jwtTokenUtil.generateRefreshToken(
                 user.getId()
         );
 
-        // Store token in Redis
-        tokenStoreService.storeAccessToken(token, user.getId());
-        tokenStoreService.storeRefreshToken(refreshedToken, user.getId());
+        return getResponseWithTokens(token, refreshToken);
+    }
 
-        return ResponseEntity.ok(new AuthResponse(token, refreshedToken));
+    private ResponseEntity<?> getResponseWithTokens(String token, String newRefreshToken) {
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken", token)
+                .httpOnly(true)
+                .path("/")
+                .maxAge(3600) // 10 час
+                .sameSite("Strict")
+                .build();
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
+                .httpOnly(true)
+                .path("/")
+                .maxAge(7 * 24 * 3600) // 7 дней
+                .sameSite("Strict")
+                .build();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
+                .body("Login successful");
     }
 
     public ResponseEntity<?> logout(HttpServletRequest request) {

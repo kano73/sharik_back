@@ -10,6 +10,7 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 public class ExceptionHandlerController {
 
     @ExceptionHandler(CustomHandleRuntimeException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public String customRuntime (CustomHandleRuntimeException exception){
         return exception.getMessage();
     }

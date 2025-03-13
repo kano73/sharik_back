@@ -18,6 +18,8 @@ public class ProductController {
 
     @PostMapping("/products")
     public List<Product> getProducts(@RequestBody(required = false) @Valid ProductSearchFilterDTO dto) {
+        dto.validate();
+        System.out.println("dto: " + dto);
         return productService.getProductsByFilterOnPage(dto);
     }
 

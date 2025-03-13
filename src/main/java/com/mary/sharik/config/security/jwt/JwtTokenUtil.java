@@ -22,6 +22,7 @@ public class JwtTokenUtil {
     public String generateAccessToken(String id, RoleEnum role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
+        claims.put("token_type", "access");
         claims.put("role", role.name());
         claims.put("iat", new Date());
         // 10 hour

@@ -1,9 +1,13 @@
 package com.mary.sharik.config.security.jwt;
 
+import com.mary.sharik.exceptions.NoDataFoundException;
 import com.mary.sharik.model.details.MyUserDetails;
+import com.mary.sharik.model.entity.MyUser;
+import com.mary.sharik.repository.MyUserRepository;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -25,22 +30,25 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
-    private final UserDetailsService userDetailsService;
     private final RedisTemplate<String, String> redisTemplate;
+    private final MyUserRepository myUserRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        // Get authorization header
-        final String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        // Extract token
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null || cookies.length == 0) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extract token
-        final String token = authHeader.substring(7);
+        final String token = Arrays.stream(cookies).filter(item->
+                item.getName().equals("accessToken"))
+                .findFirst().map(Cookie::getValue).orElse(null);
+
 
         // Validate token
         if (jwtTokenUtil.isTokenInvalid(token)) {
@@ -55,13 +63,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // Проверяем, что это access токен
-        String tokenType = claims.get("token_type", String.class);
-        if (!"access".equals(tokenType)) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         // Check if token is blacklisted in Redis
         if (redisTemplate.hasKey("BL_" + token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -70,18 +71,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Set authentication
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            String username = claims.getSubject();
-            MyUserDetails userDetails = (MyUserDetails) userDetailsService.loadUserByUsername(username);
+            String userId = claims.get("id", String.class);
+            MyUser user = myUserRepository.findById(userId).orElseThrow(
+                    ()-> new NoDataFoundException("No user found with id " + userId)
+            );
 
             Collection<SimpleGrantedAuthority> authorities = Collections.singleton(
                     new SimpleGrantedAuthority("ROLE_" + claims.get("role", String.class))
             );
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, authorities);
+                    new UsernamePasswordAuthenticationToken(new MyUserDetails(user), null, authorities);
 
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
+
+
         }
 
         filterChain.doFilter(request, response);
