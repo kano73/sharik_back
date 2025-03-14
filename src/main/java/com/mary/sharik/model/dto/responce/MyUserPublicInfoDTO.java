@@ -11,7 +11,7 @@ public class MyUserPublicInfoDTO {
     private String id;
     private String firstName;
     private String lastName;
-    private String Address;
+    private String address;
     private String email;
     private RoleEnum role;
 

@@ -2,7 +2,6 @@ package com.mary.sharik.model.entity;
 
 import com.mary.sharik.model.enums.RoleEnum;
 import jakarta.persistence.Id;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -16,7 +15,7 @@ public class MyUser {
     private String id;
     private String firstName;
     private String lastName;
-    private String Address;
+    private String address;
     private String email;
     private String password;
     private RoleEnum role;

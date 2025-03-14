@@ -111,21 +111,7 @@ public class AuthService {
                 .body("Login successful");
     }
 
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-
-            // Получаем ID пользователя из токена
-            Claims claims = jwtTokenUtil.extractAllClaims(token);
-            if (claims != null) {
-                String userId = claims.get("id", String.class);
-
-                // Инвалидируем все токены пользователя
-                tokenStoreService.invalidateAllUserTokens(userId);
-                return ResponseEntity.ok("Logged out successfully");
-            }
-        }
-        return ResponseEntity.badRequest().body("No token provided");
+    public ResponseEntity<?> logout() {
+        return getResponseWithTokens("", "");
     }
 }

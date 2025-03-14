@@ -40,50 +40,67 @@ public class CartService {
 
     private static final String CART_KEY_PREFIX = "cart:";
 
-    public void addToCart(String productId, Integer quantity) {
-        MyUser user = authenticatedMyUserService.getCurrentUserAuthenticated();
-        Product product = productRepository.findById(productId).orElseThrow(()->
-                new NoDataFoundException(String.format("Product %s not found", productId)));
-
-        ProductAndQuantity paq = new ProductAndQuantity();
-        paq.setProduct(product);
-        paq.setQuantity(quantity);
-
-        String cartKey = CART_KEY_PREFIX + user.getId();
-        redisTemplate.opsForList().rightPush(cartKey, paq);
-        redisTemplate .expire(cartKey, 1, TimeUnit.HOURS);
+    public void addToCart(ActionWithCartDTO dto) {
+        changeAmount(dto, 1);
     }
+    public void reduceAmountOrDelete(ActionWithCartDTO dto) {
+        changeAmount(dto, -1);
+    }
+
 
     public List<ProductAndQuantity> getCart(){
         return getCartByUserId(authenticatedMyUserService.getCurrentUserAuthenticated().getId());
     }
-
     public List<ProductAndQuantity> getCartByUserId(String userId) {
         String cartKey = CART_KEY_PREFIX + userId;
         return redisTemplate.opsForList().range(cartKey, 0, -1);
     }
 
-    public void reduceAmountOrDelete(ActionWithCartDTO dto) {
+
+
+    private void changeAmount(ActionWithCartDTO dto, int sigh) {
+        if(sigh != 1 && sigh != -1){
+            throw new RuntimeException("sigh can be only 1 or -1");
+        }
+
         String cartKey = CART_KEY_PREFIX + authenticatedMyUserService.getCurrentUserAuthenticated().getId();
         List<ProductAndQuantity> cart = redisTemplate.opsForList().range(cartKey, 0, -1);
+
         if (cart == null || cart.isEmpty()) {
+            addToCart(dto, cartKey);
             return;
         }
 
+        boolean isChanged = false;
         for (int i = 0; i < cart.size(); i++) {
             ProductAndQuantity item = cart.get(i);
             if (item.getProduct().getId().equals(dto.getProductId())) {
-                item.setQuantity(item.getQuantity() - dto.getQuantity());
+                isChanged = true;
+                item.setQuantity(item.getQuantity() + (sigh*dto.getQuantity()));
 
                 if (item.getQuantity() <= 0) {
                     redisTemplate.opsForList().remove(cartKey, 1, item);
                 } else {
                     redisTemplate.opsForList().set(cartKey, i, item);
                 }
+
+                redisTemplate.expire(cartKey, 1, TimeUnit.HOURS);
                 break;
             }
         }
+        if(!isChanged){
+            addToCart(dto, cartKey);
+        }
+    }
 
+    private void addToCart(ActionWithCartDTO dto, String cartKey){
+        Product product = productRepository.findById(dto.getProductId()).orElseThrow(()->
+                new NoDataFoundException(String.format("Product %s not found", dto.getProductId())));
+
+        ProductAndQuantity paq = new ProductAndQuantity();
+        paq.setProduct(product);
+        paq.setQuantity(dto.getQuantity());
+        redisTemplate.opsForList().rightPush(cartKey, paq);
         redisTemplate.expire(cartKey, 1, TimeUnit.HOURS);
     }
 
@@ -92,7 +109,6 @@ public class CartService {
     public void makeOrder(String customAddress) {
         moveToHistoryAndSetStatus(OrderStatusEnum.CREATED, customAddress);
     }
-
     public void emptyCart() {
         moveToHistoryAndSetStatus(OrderStatusEnum.CANCELLED, "");
     }
@@ -133,7 +149,6 @@ public class CartService {
         String userId = authenticatedMyUserService.getCurrentUserAuthenticated().getId();
         return getOrdersHistoryByUserId(userId);
     }
-
     public List<OrdersHistory.Order> getOrdersHistoryByUserId(String userId) {
         return getHistory(userId).getOrders();
     }
@@ -143,8 +158,11 @@ public class CartService {
             throw new NoDataFoundException("No user found with id " + userId);
         }
         return ordersHistoryRepository.findByUserId(userId)
-                .orElseThrow(()->
-                        new NoDataFoundException("No history found for user with id: " + userId));
+                .orElseGet(() -> {
+                    OrdersHistory newOrderHistory = new OrdersHistory();
+                    newOrderHistory.setUserId(userId);
+                    return ordersHistoryRepository.save(newOrderHistory);
+                });
     }
 
     public List<OrdersHistory> getWholeHistory(@NotBlank @Min(1) Integer page) {

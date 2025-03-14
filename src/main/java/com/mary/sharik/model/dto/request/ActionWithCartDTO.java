@@ -8,4 +8,12 @@ import lombok.Setter;
 public class ActionWithCartDTO {
     private String productId;
     private int quantity;
+
+    @Override
+    public String toString() {
+        return "ActionWithCartDTO{" +
+                "productId='" + productId + '\'' +
+                ", quantity=" + quantity +
+                '}';
+    }
 }

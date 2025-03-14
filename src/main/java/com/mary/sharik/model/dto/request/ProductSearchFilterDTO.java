@@ -47,6 +47,7 @@ public class ProductSearchFilterDTO {
                 '}';
     }
 
+//    todo: controller advice dont see it=> fix!
     public void validate() {
         if (nameAndDescription != null && nameAndDescription.length() < 3) {
             if (nameAndDescription.isEmpty()){

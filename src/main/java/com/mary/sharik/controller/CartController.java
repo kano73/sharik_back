@@ -24,7 +24,7 @@ public class CartController {
 
     @PostMapping("/add")
     public boolean addItem(@RequestBody ActionWithCartDTO actionWithCartDTO) {
-        cartService.addToCart(actionWithCartDTO.getProductId(), actionWithCartDTO.getQuantity());
+        cartService.addToCart(actionWithCartDTO);
         return true;
     }
 
