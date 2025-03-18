@@ -49,13 +49,6 @@ public class ProductSearchFilterDTO {
 
 //    todo: controller advice dont see it=> fix!
     public void validate() {
-        if (nameAndDescription != null && nameAndDescription.length() < 3) {
-            if (nameAndDescription.isEmpty()){
-                nameAndDescription=null;
-            }else{
-                throw new ValidationFailedException("name filed must be greater than 2");
-            }
-        }
         if (categories.isEmpty()){
             categories=null;
         }

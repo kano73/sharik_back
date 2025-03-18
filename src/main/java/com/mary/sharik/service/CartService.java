@@ -43,10 +43,31 @@ public class CartService {
     public void addToCart(ActionWithCartDTO dto) {
         changeAmount(dto, 1);
     }
-    public void reduceAmountOrDelete(ActionWithCartDTO dto) {
-        changeAmount(dto, -1);
-    }
 
+    public void resetAmountOrDelete(ActionWithCartDTO dto) {
+        String cartKey = CART_KEY_PREFIX + authenticatedMyUserService.getCurrentUserAuthenticated().getId();
+        List<ProductAndQuantity> cart = redisTemplate.opsForList().range(cartKey, 0, -1);
+
+        if (cart == null || cart.isEmpty()) {
+            return;
+        }
+
+        for (int i = 0; i < cart.size(); i++) {
+            ProductAndQuantity item = cart.get(i);
+            if (item.getProduct().getId().equals(dto.getProductId())) {
+                item.setQuantity(dto.getQuantity());
+
+                if (item.getQuantity() <= 0) {
+                    redisTemplate.opsForList().remove(cartKey, 1, item);
+                } else {
+                    redisTemplate.opsForList().set(cartKey, i, item);
+                }
+
+                redisTemplate.expire(cartKey, 1, TimeUnit.HOURS);
+                break;
+            }
+        }
+    }
 
     public List<ProductAndQuantity> getCart(){
         return getCartByUserId(authenticatedMyUserService.getCurrentUserAuthenticated().getId());

@@ -34,4 +34,9 @@ public class MyUserController {
     public MyUserPublicInfoDTO updateProfile(@RequestBody @Valid MyUserUpdateDTO user){
         return myUserService.updateInfo(user);
     }
+
+    @GetMapping("/is_user_admin")
+    public boolean isUserAdmin(){
+        return myUserService.isUserAdmin();
+    }
 }

@@ -3,6 +3,7 @@ package com.mary.sharik.service;
 import com.mary.sharik.config.security.AuthenticatedMyUserService;
 import com.mary.sharik.exceptions.NoDataFoundException;
 import com.mary.sharik.model.dto.request.MyUserRegisterDTO;
+import com.mary.sharik.model.dto.request.MyUserSearchFilterDTO;
 import com.mary.sharik.model.dto.request.MyUserUpdateDTO;
 import com.mary.sharik.model.dto.responce.MyUserPublicInfoDTO;
 import com.mary.sharik.model.entity.MyUser;
@@ -10,14 +11,21 @@ import com.mary.sharik.model.enums.RoleEnum;
 import com.mary.sharik.repository.MyUserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Service
 public class MyUserService {
+    @Value("${page.size.product}")
+    private Integer PAGE_SIZE;
 
     private final MyUserValidationService myUserValidationService;
     private final MyUserRepository myUserRepository;
@@ -70,5 +78,20 @@ public class MyUserService {
         System.out.println(dto);
 
         return MyUserPublicInfoDTO.fromUser(myUserRepository.save(user));
+    }
+
+    public List<MyUserPublicInfoDTO> getUsersByFilters(@NotNull MyUserSearchFilterDTO filter) {
+        return myUserRepository.findByFilters(filter.getFirstOrLastName(),
+                filter.getEmail(),
+                PageRequest.of(filter.getPage()-1, PAGE_SIZE)).getContent();
+    }
+
+    public boolean isUserAdmin() {
+        try {
+            return authenticatedMyUserService.getCurrentUserAuthenticated().getRole().equals(RoleEnum.ADMIN);
+        }
+        catch (NoDataFoundException e) {
+            return false;
+        }
     }
 }

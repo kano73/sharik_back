@@ -69,5 +69,11 @@ public class ProductService {
 
         return productRepository.save(product);
     }
+
+    public Product findById(String id) {
+        return productRepository.findById(id).orElseThrow(
+                () -> new NoDataFoundException("no product found with id: "+id)
+        );
+    }
 }
 

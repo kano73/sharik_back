@@ -22,6 +22,11 @@ public class ProductController {
         return productService.getProductsByFilterOnPage(dto);
     }
 
+    @GetMapping("/product")
+    public Product getProduct(@RequestParam String id) {
+        return productService.findById(id);
+    }
+
     @PostMapping("/create_product")
     public Product addProduct(@RequestBody AddProductDTO dto) {
         return productService.create(dto);

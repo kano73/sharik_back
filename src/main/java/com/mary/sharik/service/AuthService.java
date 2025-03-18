@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -28,6 +29,7 @@ public class AuthService {
     private final MyUserService myUserService;
     private final TokenStoreService tokenStoreService;
     private final AuthenticationManager authenticationManager;
+    private final PasswordEncoder passwordEncoder;
 
     public ResponseEntity<?> updateToken(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
@@ -69,15 +71,11 @@ public class AuthService {
     }
 
     public ResponseEntity<?> refreshAndAccess(AuthRequest request) {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-        } catch (BadCredentialsException e) {
+        MyUser user = myUserService.findByEmail(request.getEmail());
+
+        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-
-        MyUser user = myUserService.findByEmail(request.getEmail());
 
         String token = jwtTokenUtil.generateAccessToken(
                 user.getId(),

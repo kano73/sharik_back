@@ -25,4 +25,16 @@ public class MyUserPublicInfoDTO {
         myUserPublicInfoDTO.setRole(myUser.getRole());
         return myUserPublicInfoDTO;
     }
+
+    @Override
+    public String toString() {
+        return "MyUserPublicInfoDTO{" +
+                "id='" + id + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", address='" + address + '\'' +
+                ", email='" + email + '\'' +
+                ", role=" + role +
+                '}';
+    }
 }
