@@ -1,10 +1,12 @@
 package com.mary.sharik.controller;
 
+import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.MyUserSearchFilterDTO;
 import com.mary.sharik.model.dto.request.SetProductStatusDTO;
 import com.mary.sharik.model.dto.responce.MyUserPublicInfoDTO;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.OrdersHistory;
+import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.service.CartService;
 import com.mary.sharik.service.MyUserService;
 import com.mary.sharik.service.ProductService;
@@ -30,18 +32,18 @@ public class AdminPanelController {
 //    single
 
     @GetMapping("/profile_of")
-    public MyUserPublicInfoDTO getUsersInfo(@RequestParam @NotBlank String userId) {
-        return myUserService.getUsersInfoById(userId);
+    public MyUserPublicInfoDTO getUsersInfo(@RequestParam @NotBlank String id) {
+        return myUserService.getUsersInfoById(id);
     }
 
     @GetMapping("/cart_of")
-    public List<ProductAndQuantity> getActiveCart(@RequestParam @NotBlank String userId) {
-        return cartService.getCartByUserId(userId);
+    public List<ProductAndQuantity> getActiveCart(@RequestParam @NotBlank String id) {
+        return cartService.getCartByUserId(id);
     }
 
     @GetMapping("/history_of")
-    public List<OrdersHistory.Order> getHistory(@RequestParam @NotBlank String userId) {
-        return cartService.getOrdersHistoryByUserId(userId);
+    public OrdersHistory getHistory(@RequestParam @NotBlank String id) {
+        return cartService.getHistoryOfUserById(id);
     }
 
 //    multiple
@@ -53,10 +55,8 @@ public class AdminPanelController {
 
     @PostMapping("/all_users")
     public List<MyUserPublicInfoDTO> getAllUsers(@RequestBody MyUserSearchFilterDTO filter) {
-        System.out.println(filter);
-        List<MyUserPublicInfoDTO> usersByFilters = myUserService.getUsersByFilters(filter);
-        System.out.println(usersByFilters);
-        return usersByFilters;
+        filter.validate();
+        return myUserService.getUsersByFilters(filter);
     }
 
 //    action
@@ -65,5 +65,10 @@ public class AdminPanelController {
     public boolean setProductStatus(@RequestBody @Valid @NotNull SetProductStatusDTO dto) {
         productService.setProductStatus(dto);
         return true;
+    }
+
+    @PostMapping("/create_product")
+    public Product addProduct(@RequestBody AddProductDTO dto) {
+        return productService.create(dto);
     }
 }

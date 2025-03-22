@@ -14,7 +14,7 @@ public class AddProductDTO {
     @NotBlank
     @Size(min = 10, max = 100)
     private String name;
-    @DecimalMin("0,5")
+    @DecimalMin("0")
     private Double price;
     private Integer amountLeft;
     @NotBlank

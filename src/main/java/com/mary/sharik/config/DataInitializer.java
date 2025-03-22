@@ -63,7 +63,7 @@ public class DataInitializer implements ApplicationRunner {
 
             List<String> categoriesOfProduct = new ArrayList<>();
             for (String category : categories) {
-                if(random.nextInt(5)>3){
+                if(random.nextInt(5)>2){
                     categoriesOfProduct.add(category);
                 }
             }

@@ -12,6 +12,23 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends MongoRepository<Product, String> {
 
+/*    @Query("{ $and: [ "
+            + " { $or: [ "
+            + "   { 'name': { $regex: ?0, $options: 'i' } }, "
+            + "   { 'description': { $regex: ?0, $options: 'i' } } "
+            + " ] }, "
+            + " { $expr: { $or: [ { $eq: [ ?1, null ] }, { $gte: [ '$price', ?1 ] } ] } }, "
+            + " { $expr: { $or: [ { $eq: [ ?2, null ] }, { $lte: [ '$price', ?2 ] } ] } }, "
+            + " { $cond: { "
+            + "     if: { $and: [ { $ne: [ ?3, null ] }, { $gt: [ { $size: ?3 }, 0 ] } ] }, "
+            + "     then: { 'categories': { $in: ?3 } }, "
+            + "     else: {} "
+            + " } } "
+            + " ] }")
+    Page<Product> searchProductsByFilter(String nameOrDescription,
+                                         Integer priceFrom, Integer priceTo,
+                                         List<String> categories, Pageable pageable);*/
+
     @Query("{ $and: [ "
             + " { $or: [ "
             + "   { 'name': { $regex: ?0, $options: 'i' } }, "
@@ -19,9 +36,9 @@ public interface ProductRepository extends MongoRepository<Product, String> {
             + " ] }, "
             + " { $expr: { $or: [ { $eq: [ ?1, null ] }, { $gte: [ '$price', ?1 ] } ] } }, "
             + " { $expr: { $or: [ { $eq: [ ?2, null ] }, { $lte: [ '$price', ?2 ] } ] } }, "
-            + " { $expr: { $or: [ { $eq: [ ?3, null ] }, { $in: [ ?3, '$categories' ] } ] } } "
+            + " { $or: [ { $expr: { $eq: [ ?#{#categories == null || #categories.empty}, true ] } }, { 'categories': { $in: ?3 } } ] } "
             + " ] }")
     Page<Product> searchProductsByFilter(String nameOrDescription,
-                                         Double priceFrom, Double priceTo,
+                                         Integer priceFrom, Integer priceTo,
                                          List<String> categories, Pageable pageable);
 }

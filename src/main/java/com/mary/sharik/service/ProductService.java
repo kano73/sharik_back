@@ -1,11 +1,13 @@
 package com.mary.sharik.service;
 
 import com.mary.sharik.exceptions.NoDataFoundException;
+import com.mary.sharik.model.PriceProperties;
 import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.dto.request.SetProductStatusDTO;
 import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.repository.ProductRepository;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
@@ -21,25 +23,18 @@ import java.util.List;
 public class ProductService {
     @Value("${page.size.product}")
     private Integer PAGE_SIZE;
-    @Value("${price.digits.after.coma}")
-    private Integer DIGITS_AFTER_COMA;
+    private final Integer DIGITS_AFTER_COMA = PriceProperties.AFTER_COMA;
 
     private final ProductRepository productRepository;
 
-    public List<Product> getProductsByFilterOnPage(ProductSearchFilterDTO dto) {
-        if (dto == null) {
-            dto = new ProductSearchFilterDTO();
-        }
-
-        dto.setNameAndDescription(
-                dto.getNameAndDescription() == null || dto.getNameAndDescription().isEmpty() ?
-                ""
-                : dto.getNameAndDescription());
+    public List<Product> getProductsByFilterOnPage(@NotNull ProductSearchFilterDTO dto) {
+        Integer priceFrom = dto.getPriceFrom()==null? null : dto.getPriceFrom().intValue();
+        Integer priceTo = dto.getPriceTo()==null? null : dto.getPriceTo().intValue();
 
         return productRepository.searchProductsByFilter(
                 dto.getNameAndDescription(),
-                dto.getPriceFrom(),
-                dto.getPriceTo(),
+                priceFrom,
+                priceTo,
                 dto.getCategories(),
                 PageRequest.of(
                         dto.getPage()-1,
@@ -65,7 +60,7 @@ public class ProductService {
         product.setAmountLeft(dto.getAmountLeft());
         product.setImageUrl(dto.getImageUrl());
 
-        product.setPrice((int) Math.round(dto.getPrice()) * DIGITS_AFTER_COMA);
+        product.setPrice((int) Math.round(dto.getPrice()) * (int) Math.pow(10,DIGITS_AFTER_COMA));
 
         return productRepository.save(product);
     }
@@ -76,4 +71,3 @@ public class ProductService {
         );
     }
 }
-

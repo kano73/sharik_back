@@ -4,11 +4,9 @@ import com.mary.sharik.config.security.jwt.JwtTokenUtil;
 import com.mary.sharik.config.security.jwt.TokenStoreService;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.MyUser;
+import com.mary.sharik.model.enums.TokenType;
 import com.mary.sharik.model.jwt.AuthRequest;
-import com.mary.sharik.model.jwt.AuthResponse;
-import com.mary.sharik.model.jwt.RefreshTokenRequest;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletRequest;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
@@ -16,13 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
+@Getter
 public class AuthService {
     private final RedisTemplate<String, ProductAndQuantity> redisTemplate;
     private final JwtTokenUtil jwtTokenUtil;
@@ -31,77 +28,45 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
-    public ResponseEntity<?> updateToken(RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
+//      10 min
+    public static final Integer MAX_AGE_ACCESS = 360;
+//      7 days
+    public static final Integer MAX_AGE_REFRESH = 604800;
 
-        // Проверяем, не в черном ли списке токен
-        Boolean isBlacklisted = redisTemplate.hasKey("BL_" + refreshToken);
-        if (isBlacklisted) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token");
-        }
-
-        // Проверяем валидность refresh токена
-        if (jwtTokenUtil.isTokenInvalid(refreshToken)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token expired");
-        }
-
-        Claims claims = jwtTokenUtil.extractAllClaims(refreshToken);
-
-        // Проверяем, что это действительно refresh токен
-        String tokenType = claims.get("token_type", String.class);
-        if (!"refresh".equals(tokenType)) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token type");
-        }
-
-        String userId = claims.get("id", String.class);
-
-        // Загружаем данные пользователя для получения его роли
-        MyUser user = myUserService.findById(userId);
-
-        // Генерируем новый access токен
-        String token = jwtTokenUtil.generateAccessToken(
-                userId,
-                user.getRole()
-        );
-        String newRefreshToken = jwtTokenUtil.generateRefreshToken(
-                user.getId()
-        );
-
-        return getResponseWithTokens(token, newRefreshToken);
-    }
-
-    public ResponseEntity<?> refreshAndAccess(AuthRequest request) {
+    public ResponseEntity<?> refreshAndAccessForCurrentUser(AuthRequest request) {
         MyUser user = myUserService.findByEmail(request.getEmail());
 
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
 
+        return generateTokensWithId(user.getId());
+    }
+
+    public ResponseEntity<?> generateTokensWithId(String id) {
         String token = jwtTokenUtil.generateAccessToken(
-                user.getId(),
-                user.getRole()
+                id
         );
         String refreshToken = jwtTokenUtil.generateRefreshToken(
-                user.getId()
+                id
         );
 
         return getResponseWithTokens(token, refreshToken);
     }
 
-    private ResponseEntity<?> getResponseWithTokens(String token, String newRefreshToken) {
-        ResponseCookie accessCookie = ResponseCookie.from("accessToken", token)
+    public static ResponseCookie tokenToCookie(String token, TokenType type, Integer age) {
+        return ResponseCookie.from(type.toString(), token)
                 .httpOnly(true)
                 .path("/")
-                .maxAge(3600) // 10 час
+                .maxAge(age) // 1 час
                 .sameSite("Strict")
                 .build();
+    }
 
-        ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", newRefreshToken)
-                .httpOnly(true)
-                .path("/")
-                .maxAge(7 * 24 * 3600) // 7 дней
-                .sameSite("Strict")
-                .build();
+    private ResponseEntity<?> getResponseWithTokens(String token, String newRefreshToken) {
+        ResponseCookie accessCookie = tokenToCookie(token, TokenType.accessToken, MAX_AGE_ACCESS);
+
+        ResponseCookie refreshCookie = tokenToCookie(newRefreshToken, TokenType.refreshToken, MAX_AGE_REFRESH);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())

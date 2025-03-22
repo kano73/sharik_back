@@ -1,6 +1,5 @@
 package com.mary.sharik.controller;
 
-import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.service.ProductService;
@@ -18,7 +17,6 @@ public class ProductController {
 
     @PostMapping("/products")
     public List<Product> getProducts(@RequestBody(required = false) @Valid ProductSearchFilterDTO dto) {
-        dto.validate();
         return productService.getProductsByFilterOnPage(dto);
     }
 
@@ -27,9 +25,5 @@ public class ProductController {
         return productService.findById(id);
     }
 
-    @PostMapping("/create_product")
-    public Product addProduct(@RequestBody AddProductDTO dto) {
-        return productService.create(dto);
-    }
 }
 

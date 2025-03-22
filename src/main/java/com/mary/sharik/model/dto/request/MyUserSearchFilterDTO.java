@@ -7,6 +7,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MyUserSearchFilterDTO {
+    private String id;
     private String firstOrLastName = "";
     private String email = "";
     @Min(1)
@@ -15,9 +16,16 @@ public class MyUserSearchFilterDTO {
     @Override
     public String toString() {
         return "MyUserSearchFilterDTO{" +
-                "firstOrLastName='" + firstOrLastName + '\'' +
+                "id='" + id + '\'' +
+                ", firstOrLastName='" + firstOrLastName + '\'' +
                 ", email='" + email + '\'' +
                 ", page=" + page +
                 '}';
+    }
+
+    public void validate() {
+        if (id!=null && id.isEmpty()) {
+            id=null;
+        }
     }
 }

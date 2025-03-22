@@ -2,6 +2,7 @@ package com.mary.sharik.service;
 
 import com.mary.sharik.config.security.AuthenticatedMyUserService;
 import com.mary.sharik.exceptions.NoDataFoundException;
+import com.mary.sharik.exceptions.ValidationFailedException;
 import com.mary.sharik.model.dto.request.ActionWithCartDTO;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.OrdersHistory;
@@ -17,9 +18,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +45,7 @@ public class CartService {
     private static final String CART_KEY_PREFIX = "cart:";
 
     public void addToCart(ActionWithCartDTO dto) {
-        changeAmount(dto, 1);
+        changeAmount(dto);
     }
 
     public void resetAmountOrDelete(ActionWithCartDTO dto) {
@@ -55,14 +59,15 @@ public class CartService {
         for (int i = 0; i < cart.size(); i++) {
             ProductAndQuantity item = cart.get(i);
             if (item.getProduct().getId().equals(dto.getProductId())) {
-                item.setQuantity(dto.getQuantity());
-
-                if (item.getQuantity() <= 0) {
+                if (dto.getQuantity() <= 0) {
                     redisTemplate.opsForList().remove(cartKey, 1, item);
                 } else {
+                    if(dto.getQuantity()>item.getProduct().getAmountLeft()) {
+                        throw new ValidationFailedException("These is not enough product amount left");
+                    }
+                    item.setQuantity(dto.getQuantity());
                     redisTemplate.opsForList().set(cartKey, i, item);
                 }
-
                 redisTemplate.expire(cartKey, 1, TimeUnit.HOURS);
                 break;
             }
@@ -77,13 +82,7 @@ public class CartService {
         return redisTemplate.opsForList().range(cartKey, 0, -1);
     }
 
-
-
-    private void changeAmount(ActionWithCartDTO dto, int sigh) {
-        if(sigh != 1 && sigh != -1){
-            throw new RuntimeException("sigh can be only 1 or -1");
-        }
-
+    private void changeAmount(ActionWithCartDTO dto) {
         String cartKey = CART_KEY_PREFIX + authenticatedMyUserService.getCurrentUserAuthenticated().getId();
         List<ProductAndQuantity> cart = redisTemplate.opsForList().range(cartKey, 0, -1);
 
@@ -97,11 +96,15 @@ public class CartService {
             ProductAndQuantity item = cart.get(i);
             if (item.getProduct().getId().equals(dto.getProductId())) {
                 isChanged = true;
-                item.setQuantity(item.getQuantity() + (sigh*dto.getQuantity()));
+
 
                 if (item.getQuantity() <= 0) {
                     redisTemplate.opsForList().remove(cartKey, 1, item);
                 } else {
+                    item.setQuantity(item.getQuantity() + (dto.getQuantity()));
+                    if(item.getProduct().getAmountLeft()<item.getQuantity()) {
+                        throw new ValidationFailedException("These is not enough product amount left");
+                    }
                     redisTemplate.opsForList().set(cartKey, i, item);
                 }
 
@@ -117,6 +120,9 @@ public class CartService {
     private void addToCart(ActionWithCartDTO dto, String cartKey){
         Product product = productRepository.findById(dto.getProductId()).orElseThrow(()->
                 new NoDataFoundException(String.format("Product %s not found", dto.getProductId())));
+        if(product.getAmountLeft()<dto.getQuantity()){
+            throw new ValidationFailedException("These is not enough product amount left");
+        }
 
         ProductAndQuantity paq = new ProductAndQuantity();
         paq.setProduct(product);
@@ -127,30 +133,47 @@ public class CartService {
 
 //  between
 
+    @Transactional
     public void makeOrder(String customAddress) {
         moveToHistoryAndSetStatus(OrderStatusEnum.CREATED, customAddress);
     }
+
     public void emptyCart() {
         moveToHistoryAndSetStatus(OrderStatusEnum.CANCELLED, "");
     }
 
     private void moveToHistoryAndSetStatus(OrderStatusEnum status, String customAddress) {
         MyUser user = authenticatedMyUserService.getCurrentUserAuthenticated();
-        OrdersHistory ordersHistory = getHistory(user.getId());
+        OrdersHistory ordersHistory = getHistoryOfUserById(user.getId());
 
-        List<ProductAndQuantity> products = redisTemplate.opsForList().range(CART_KEY_PREFIX + user.getId(), 0, -1);
+        List<ProductAndQuantity> paq = redisTemplate.opsForList().range(CART_KEY_PREFIX + user.getId(), 0, -1);
 
-        if(products == null || products.isEmpty()) {
+        if(paq == null || paq.isEmpty()) {
             return;
         }
 
-        List<OrdersHistory.CartItem> cartItems = products.stream()
+        List<OrdersHistory.CartItem> cartItems = paq.stream()
                 .map(product ->{
                     OrdersHistory.CartItem item = new OrdersHistory.CartItem();
-                    item.setProductId(product.getProduct().getId());
+                    item.setProduct(product.getProduct());
                     item.setQuantity(product.getQuantity());
                     return item;
                 }).toList();
+
+        if(status==OrderStatusEnum.CREATED){
+            cartItems.forEach(paq1 -> {
+                Product prod = productRepository.findById(paq1.getProduct().getId()).orElseThrow(()->
+                        new NoDataFoundException("no product found with id:"+ paq1.getProduct().getId())
+                );
+
+                if(prod.getAmountLeft()<paq1.getQuantity()){
+                    throw new ValidationFailedException("These is not enough product amount left");
+                }
+
+                prod.setAmountLeft(prod.getAmountLeft()-paq1.getQuantity());
+                productRepository.save(prod);
+            });
+        }
 
         OrdersHistory.Order order = new OrdersHistory.Order();
         order.setItems(cartItems);
@@ -166,15 +189,12 @@ public class CartService {
 
 //    mongo
 
-    public List<OrdersHistory.Order> getOrdersHistory() {
+    public OrdersHistory getOrdersHistory() {
         String userId = authenticatedMyUserService.getCurrentUserAuthenticated().getId();
-        return getOrdersHistoryByUserId(userId);
-    }
-    public List<OrdersHistory.Order> getOrdersHistoryByUserId(String userId) {
-        return getHistory(userId).getOrders();
+        return getHistoryOfUserById(userId);
     }
 
-    private OrdersHistory getHistory(String userId) {
+    public OrdersHistory getHistoryOfUserById(String userId) {
         if(myUserRepository.findById(userId).isEmpty()) {
             throw new NoDataFoundException("No user found with id " + userId);
         }
@@ -182,11 +202,32 @@ public class CartService {
                 .orElseGet(() -> {
                     OrdersHistory newOrderHistory = new OrdersHistory();
                     newOrderHistory.setUserId(userId);
-                    return ordersHistoryRepository.save(newOrderHistory);
+                    return newOrderHistory;
                 });
     }
 
     public List<OrdersHistory> getWholeHistory(@NotBlank @Min(1) Integer page) {
-        return ordersHistoryRepository.findAll(PageRequest.of(page-1, PAGE_SIZE )).getContent();
+        return ordersHistoryRepository
+                .findAll(PageRequest.of(page - 1, PAGE_SIZE))
+                .getContent();
+
+    }
+
+//    scheduled task
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void simulateStatusModification() {
+        System.out.println("simulateStatusModification");
+        List<OrderStatusEnum> statusEnumList = Arrays.asList(OrderStatusEnum.values());
+        List<OrdersHistory> all = ordersHistoryRepository.findAll();
+        all.forEach(ordersHistory -> ordersHistory.getOrders().forEach(order -> {
+            OrderStatusEnum status = order.getStatus();
+            int index = statusEnumList.indexOf(status);
+            if(index != statusEnumList.size() - 3 && status!=OrderStatusEnum.CANCELLED) {
+                status = statusEnumList.get(index + 1);
+                order.setStatus(status);
+            }
+        }));
+        ordersHistoryRepository.saveAll(all);
     }
 }

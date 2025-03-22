@@ -1,6 +1,5 @@
 package com.mary.sharik.config.security.jwt;
 
-import com.mary.sharik.model.enums.RoleEnum;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.Jwts;
@@ -19,11 +18,10 @@ public class JwtTokenUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
-    public String generateAccessToken(String id, RoleEnum role) {
+    public String generateAccessToken(String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
         claims.put("token_type", "access");
-        claims.put("role", role.name());
         claims.put("iat", new Date());
         // 10 hour
         long expirationTime = 36_000_000;
@@ -55,7 +53,7 @@ public class JwtTokenUtil {
         return builder.compact();
     }
 
-    public boolean isTokenInvalid(String token) {
+    public boolean isTokenExpired(String token) {
         try {
             SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
 
@@ -67,6 +65,21 @@ public class JwtTokenUtil {
             return claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return true;
+        }
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
+
+            Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token).getPayload();
+
+            return true;
+        } catch (Exception e) {
+            return false;
         }
     }
 

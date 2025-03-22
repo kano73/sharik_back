@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Service
@@ -46,11 +47,6 @@ public class MyUserService {
         myUserRepository.save(myUser);
     }
 
-    public MyUser findById(String userId) {
-        return myUserRepository.findById(userId).orElseThrow(()->
-                new NoDataFoundException("No user found with id:" + userId));
-    }
-
     public MyUser findByEmail(String email) {
         return myUserRepository.findByEmailEqualsIgnoreCase(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found : " + email));
@@ -75,15 +71,29 @@ public class MyUserService {
         user.setEmail(dto.getEmail());
         user.setAddress(dto.getAddress());
 
-        System.out.println(dto);
-
         return MyUserPublicInfoDTO.fromUser(myUserRepository.save(user));
     }
 
     public List<MyUserPublicInfoDTO> getUsersByFilters(@NotNull MyUserSearchFilterDTO filter) {
-        return myUserRepository.findByFilters(filter.getFirstOrLastName(),
-                filter.getEmail(),
-                PageRequest.of(filter.getPage()-1, PAGE_SIZE)).getContent();
+        List<MyUserPublicInfoDTO> byFilters;
+
+        if(filter.getFirstOrLastName()!=null && !Objects.equals(filter.getFirstOrLastName(), "")){
+            byFilters = myUserRepository.findByLastNameContainingIgnoreCaseOrFirstNameContainingIgnoreCase(
+                    filter.getFirstOrLastName(),
+                    filter.getFirstOrLastName(),
+                    PageRequest.of(filter.getPage()-1 , PAGE_SIZE)).getContent();
+
+        }else if(filter.getEmail()!=null && !Objects.equals(filter.getEmail(), "")){
+            byFilters = myUserRepository.findByEmail(filter.getEmail()).stream().toList();
+
+        } else if(filter.getId()!=null && !Objects.equals(filter.getId(), "")){
+            byFilters = myUserRepository.findById(filter.getId()).stream()
+                    .map(MyUserPublicInfoDTO::fromUser).toList();
+
+        }else{
+            byFilters = myUserRepository.findAll(PageRequest.of(filter.getPage()-1 , PAGE_SIZE)).stream().map(MyUserPublicInfoDTO::fromUser).toList();
+        }
+        return byFilters;
     }
 
     public boolean isUserAdmin() {

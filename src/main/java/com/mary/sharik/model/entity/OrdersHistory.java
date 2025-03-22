@@ -8,7 +8,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Data
 @Document(collection = "orderHistory")
@@ -29,19 +28,7 @@ public class OrdersHistory {
 
     @Data
     public static class CartItem {
-        private String productId;
+        private Product product;
         private int quantity;
-
-        @Override
-        public boolean equals(Object o) {
-            if (o == null || getClass() != o.getClass()) return false;
-            CartItem cartItem = (CartItem) o;
-            return Objects.equals(productId, cartItem.productId);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hashCode(productId);
-        }
     }
 }

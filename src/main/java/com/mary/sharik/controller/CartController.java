@@ -5,20 +5,19 @@ import com.mary.sharik.model.dto.request.OrderRequest;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.OrdersHistory;
 import com.mary.sharik.service.CartService;
-import com.mongodb.lang.Nullable;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 public class CartController {
 
     private final CartService cartService;
+
+//    action
 
     @DeleteMapping("/empty_cart")
     public boolean emptyCart() {
@@ -38,6 +37,8 @@ public class CartController {
         return true;
     }
 
+//    view
+
     @PostMapping("/make_order")
     public boolean completeOrder(@RequestBody @Valid OrderRequest orderRequest) {
         cartService.makeOrder(orderRequest.getCustomAddress());
@@ -50,7 +51,7 @@ public class CartController {
     }
 
     @GetMapping("/history")
-    public List<OrdersHistory.Order> getHistory() {
+    public OrdersHistory getHistory() {
         return cartService.getOrdersHistory();
     }
 }

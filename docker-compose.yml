@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Redis сервис
+  redis:
+    image: redis:alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # MongoDB сервис
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: 12345
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongo-data:/data/db
+
+  # Spring Boot приложение
+  springboot-app:
+    build:
+      context: ./springboot-app
+      dockerfile: Dockerfile.springboot
+    container_name: springboot-app
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+      - mongo
+
+  # React приложение
+  react-app:
+    build:
+      context: ./react-app
+      dockerfile: Dockerfile.react
+    container_name: react-app
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - springboot-app
