@@ -22,7 +22,6 @@ public record MyUserDetails(MyUser myUser) implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_" + myUser.getRole().name()));
+        return List.of(new SimpleGrantedAuthority(myUser.getRole().name()));
     }
-
 }

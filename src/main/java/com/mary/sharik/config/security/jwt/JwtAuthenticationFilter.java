@@ -122,8 +122,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     ()-> new NoDataFoundException("No user found with id " + userId)
             );
 
+            String role = user.getRole().name();
+
             Collection<SimpleGrantedAuthority> authorities = Collections.singleton(
-                    new SimpleGrantedAuthority("ROLE_" + claims.get("role", String.class))
+                    new SimpleGrantedAuthority("ROLE_" + role)
             );
 
             UsernamePasswordAuthenticationToken authentication =
