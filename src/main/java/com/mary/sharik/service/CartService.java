@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -133,11 +134,12 @@ public class CartService {
 
 //  between
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void makeOrder(String customAddress) {
         moveToHistoryAndSetStatus(OrderStatusEnum.CREATED, customAddress);
     }
 
+    @Transactional(isolation = Isolation.READ_COMMITTED)
     public void emptyCart() {
         moveToHistoryAndSetStatus(OrderStatusEnum.CANCELLED, "");
     }
