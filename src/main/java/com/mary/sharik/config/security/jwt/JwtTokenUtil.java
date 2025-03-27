@@ -18,33 +18,30 @@ public class JwtTokenUtil {
     @Value("${jwt.secret}")
     private String secretKey;
 
+    @Value("${max.age.access}")
+    private long expirationTimeAccess;
+
+    @Value("${max.age.refresh}")
+    private long expirationTimeRefresh;
+
     public String generateAccessToken(String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
         claims.put("token_type", "access");
-        claims.put("iat", new Date());
-        // 10 hour
-        long expirationTime = 36_000_000;
-        claims.put("exp", new Date(System.currentTimeMillis() + expirationTime));
-
-        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
-
-        JwtBuilder builder = Jwts.builder()
-                .signWith(key);
-
-        claims.forEach(builder::claim);
-
-        return builder.compact();
+        return buildToken(claims, expirationTimeAccess);
     }
 
     public String generateRefreshToken(String id) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("id", id);
         claims.put("token_type", "refresh");
+        return buildToken(claims, expirationTimeRefresh);
+    }
+
+    private String buildToken(Map<String, Object> claims, long expirationTimeRefresh) {
         claims.put("iat", new Date());
-        // 7 days
-        long expirationTime = 605_000_000;
-        claims.put("exp", new Date(System.currentTimeMillis() + expirationTime));
+
+        claims.put("exp", new Date(System.currentTimeMillis() + expirationTimeRefresh));
 
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
         JwtBuilder builder = Jwts.builder().signWith(key);
