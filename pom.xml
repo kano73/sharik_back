@@ -139,7 +139,6 @@
 			<artifactId>spring-kafka</artifactId>
 			<version>3.3.4</version>
 		</dependency>
-
 	</dependencies>
 
 	<build>
