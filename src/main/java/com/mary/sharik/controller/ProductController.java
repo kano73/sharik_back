@@ -21,7 +21,14 @@ public class ProductController {
     public List<Product> getProducts(@RequestBody(required = false) @Valid ProductSearchFilterDTO dto) throws Exception {
 //        return productService.getProductsByFilterOnPage(dto);
 
-        return kafkaProductService.requestProductsByFilter(dto);
+        System.out.println("got request");
+
+        List<Product> products = kafkaProductService.requestProductsByFilter(dto);
+
+        System.out.println(products);
+
+        return products;
+
     }
 
 

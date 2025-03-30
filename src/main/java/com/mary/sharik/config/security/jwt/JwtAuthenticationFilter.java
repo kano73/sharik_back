@@ -30,7 +30,7 @@ import java.util.*;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final Set<String> ALLOWED_PATHS = Set.of("/login", "/register", "/logout");
+    private static final Set<String> ALLOWED_PATHS = Set.of("/login", "/register", "/logout", "/products", "/product");
 
     private final JwtTokenUtil jwtTokenUtil;
     private final RedisTemplate<String, String> redisTemplate;

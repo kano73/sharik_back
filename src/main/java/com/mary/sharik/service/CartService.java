@@ -64,7 +64,7 @@ public class CartService {
                     redisTemplate.opsForList().remove(cartKey, 1, item);
                 } else {
                     if(dto.getQuantity()>item.getProduct().getAmountLeft()) {
-                        throw new ValidationFailedException("These is not enough product amount left");
+                        throw new ValidationFailedException("There is not enough product amount left");
                     }
                     item.setQuantity(dto.getQuantity());
                     redisTemplate.opsForList().set(cartKey, i, item);
@@ -104,7 +104,7 @@ public class CartService {
                 } else {
                     item.setQuantity(item.getQuantity() + (dto.getQuantity()));
                     if(item.getProduct().getAmountLeft()<item.getQuantity()) {
-                        throw new ValidationFailedException("These is not enough product amount left");
+                        throw new ValidationFailedException("There is not enough product amount left");
                     }
                     redisTemplate.opsForList().set(cartKey, i, item);
                 }
@@ -122,7 +122,7 @@ public class CartService {
         Product product = productRepository.findById(dto.getProductId()).orElseThrow(()->
                 new NoDataFoundException(String.format("Product %s not found", dto.getProductId())));
         if(product.getAmountLeft()<dto.getQuantity()){
-            throw new ValidationFailedException("These is not enough product amount left");
+            throw new ValidationFailedException("There is not enough product amount left");
         }
 
         ProductAndQuantity paq = new ProductAndQuantity();
@@ -169,7 +169,7 @@ public class CartService {
                 );
 
                 if(prod.getAmountLeft()<paq1.getQuantity()){
-                    throw new ValidationFailedException("These is not enough product amount left");
+                    throw new ValidationFailedException("There is not enough product amount left");
                 }
 
                 prod.setAmountLeft(prod.getAmountLeft()-paq1.getQuantity());
