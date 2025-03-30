@@ -24,53 +24,48 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
-@Service
 @RequiredArgsConstructor
+@Service
 public class KafkaProductService {
 
     @Autowired
     private ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public List<Product> requestProductsByFilter(ProductSearchFilterDTO filter) throws Exception {
-
-        System.out.println("filter row: "+filter);
-
         // Преобразуем фильтр в JSON
-        String valueJson = new ObjectMapper().writeValueAsString(filter);
-
-        System.out.println("valueJson: "+valueJson);
+        String valueJson = objectMapper.writeValueAsString(filter);
 
         ConsumerRecord<String, String> response = makeRequest(KafkaTopicEnum.PRODUCT_BY_FILTER_TOPIC.name(),valueJson );
 
         // Преобразуем JSON в список объектов Product
-        ObjectMapper mapper = new ObjectMapper();
+        ObjectMapper mapper = objectMapper;
         CollectionType listType = mapper.getTypeFactory().constructCollectionType(List.class, Product.class);
-
-        System.out.println("response json: " + response.toString());
 
         return mapper.readValue(response.value(), listType);
     }
 
     public Boolean createProduct(AddProductDTO dto) throws Exception {
         // Преобразуем фильтр в JSON
-        String valueJson = new ObjectMapper().writeValueAsString(dto);
+        String valueJson = objectMapper.writeValueAsString(dto);
 
         ConsumerRecord<String, String> response = makeRequest(KafkaTopicEnum.PRODUCT_CREATE_TOPIC.name(),valueJson );
 
         // Преобразуем JSON в список объектов Product
-        return new ObjectMapper().readValue(response.value(), Boolean.class);
+        return objectMapper.readValue(response.value(), Boolean.class);
     }
 
     public Product requestProductsById(String id) throws Exception {
         // Преобразуем фильтр в JSON
-        String valueJson = new ObjectMapper().writeValueAsString(id);
+        String valueJson = objectMapper.writeValueAsString(id);
 
         ConsumerRecord<String, String> response = makeRequest(KafkaTopicEnum.PRODUCT_BY_ID_TOPIC.name(), valueJson);
 
         System.out.println("response json: " + response.toString());
 
         // Преобразуем JSON в список объектов Product
-        return new ObjectMapper().readValue(response.value(), Product.class);
+        return objectMapper.readValue(response.value(), Product.class);
     }
 
     private ConsumerRecord<String, String> makeRequest(String topic, String value)
