@@ -7,34 +7,18 @@ import com.mary.sharik.config.security.AuthenticatedMyUserService;
 import com.mary.sharik.exceptions.MicroserviceExternalException;
 import com.mary.sharik.exceptions.ValidationFailedException;
 import com.mary.sharik.model.dto.request.ActionWithCartDTO;
-import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.OrderDetailsDTO;
-import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.model.enums.KafkaTopicEnum;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.header.Header;
-import org.apache.kafka.common.header.internals.RecordHeader;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
-import org.springframework.kafka.requestreply.RequestReplyFuture;
-import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.List;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 
 @RequiredArgsConstructor
 @Service
