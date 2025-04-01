@@ -2,7 +2,6 @@ package com.mary.sharik.model.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mary.sharik.model.PriceProperties;
 import com.mary.sharik.model.enums.SortProductByEnum;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -38,16 +37,13 @@ public class ProductSearchFilterDTO {
     @JsonCreator
     public ProductSearchFilterDTO(
             @JsonProperty("nameAndDescription") String nameAndDescription,
-            @JsonProperty("priceFrom") Double priceFrom,
-            @JsonProperty("priceTo") Double priceTo,
             @JsonProperty("categories") List<String> categories,
             @JsonProperty("page") Integer page,
             @JsonProperty("sortBy") SortProductByEnum sortBy,
             @JsonProperty("sortDirection") Sort.Direction sortDirection) {
 
         this.nameAndDescription = (nameAndDescription == null || nameAndDescription.isEmpty()) ? "" : nameAndDescription;
-        this.priceFrom = priceFrom == null ? null : priceFrom * (int) Math.pow(10, PriceProperties.AFTER_COMA);
-        this.priceTo = priceTo == null ? null : priceTo * (int) Math.pow(10, PriceProperties.AFTER_COMA);
+//price adjustment is in product_microservice
         this.categories = (categories == null) ? new ArrayList<>() : categories;
         this.page = (page == null || page < 1) ? 1 : page;
         this.sortBy = (sortBy == null) ? SortProductByEnum.NAME : sortBy;

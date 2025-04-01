@@ -8,7 +8,6 @@ import com.mary.sharik.exceptions.ValidationFailedException;
 import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.dto.request.SetProductStatusDTO;
-import com.mary.sharik.model.entity.OrdersHistory;
 import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.model.enums.KafkaTopicEnum;
 import jakarta.validation.Valid;
@@ -16,21 +15,17 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 @RequiredArgsConstructor
 @Service
 public class KafkaProductService {
 
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private KafkaRequesterService kafkaRequesterService;
+    private final ObjectMapper objectMapper;
+    private final KafkaRequesterService kafkaRequesterService;
 
     @SneakyThrows
     public List<Product> requestProductsByFilter(ProductSearchFilterDTO filter) {

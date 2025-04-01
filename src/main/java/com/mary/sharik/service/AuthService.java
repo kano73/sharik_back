@@ -1,7 +1,6 @@
 package com.mary.sharik.service;
 
 import com.mary.sharik.config.security.jwt.JwtTokenUtil;
-import com.mary.sharik.config.security.jwt.TokenStoreService;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.enums.TokenType;
@@ -24,7 +23,6 @@ public class AuthService {
     private final RedisTemplate<String, ProductAndQuantity> redisTemplate;
     private final JwtTokenUtil jwtTokenUtil;
     private final MyUserService myUserService;
-    private final TokenStoreService tokenStoreService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 

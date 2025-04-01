@@ -8,7 +8,6 @@ import com.mary.sharik.exceptions.MicroserviceExternalException;
 import com.mary.sharik.exceptions.ValidationFailedException;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.entity.OrdersHistory;
-import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.model.enums.KafkaTopicEnum;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 @RequiredArgsConstructor
 @Service

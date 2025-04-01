@@ -2,7 +2,6 @@ package com.mary.sharik.controller;
 
 import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.entity.Product;
-import com.mary.sharik.service.ProductService;
 import com.mary.sharik.kafka.KafkaProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +16,12 @@ public class ProductController {
     private final KafkaProductService kafkaProductService;
 
     @PostMapping("/products")
-    public List<Product> getProducts(@RequestBody(required = false) @Valid ProductSearchFilterDTO dto) throws Exception {
+    public List<Product> getProducts(@RequestBody(required = false) @Valid ProductSearchFilterDTO dto) {
         return kafkaProductService.requestProductsByFilter(dto);
     }
 
     @GetMapping("/product")
-    public Product getProduct(@RequestParam String id) throws Exception {
+    public Product getProduct(@RequestParam String id) {
         return kafkaProductService.requestProductsById(id);
     }
 }

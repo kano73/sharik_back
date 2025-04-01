@@ -1,12 +1,9 @@
 package com.mary.sharik.controller;
 
 import com.mary.sharik.kafka.KafkaCartService;
-import com.mary.sharik.kafka.KafkaHistoryService;
 import com.mary.sharik.model.dto.request.ActionWithCartDTO;
 import com.mary.sharik.model.dto.request.OrderDetailsDTO;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
-import com.mary.sharik.model.entity.OrdersHistory;
-import com.mary.sharik.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +15,6 @@ import java.util.List;
 public class CartController {
 
     private final KafkaCartService kafkaCartService;
-    private final KafkaHistoryService kafkaHistoryService;
 
     @DeleteMapping("/empty_cart")
     public boolean emptyCart() {

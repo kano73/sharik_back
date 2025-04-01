@@ -1,10 +1,8 @@
 package com.mary.sharik.controller;
 
-
 import com.mary.sharik.model.dto.request.MyUserRegisterDTO;
 import com.mary.sharik.model.dto.request.MyUserUpdateDTO;
 import com.mary.sharik.model.dto.responce.MyUserPublicInfoDTO;
-import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.service.MyUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
