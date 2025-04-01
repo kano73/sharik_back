@@ -15,16 +15,9 @@ public class ExceptionHandlerController {
     @ExceptionHandler(CompletionException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String customRuntime (CompletionException exception){
-        System.out.println("studipy CompletionException handler handled an exception");
-
-        System.out.println("i am studipy handler here is how i found message: "+ exception.getMessage());
-
         String rowMessage = exception.getMessage().substring(0, exception.getMessage().length()-1);
-        String substring = rowMessage.substring(rowMessage.lastIndexOf('"')+1);
 
-        System.out.println("result: "+substring);
-
-        return substring;
+        return rowMessage.substring(rowMessage.lastIndexOf('"')+1);
     }
 
     @ExceptionHandler(MicroserviceExternalException.class)

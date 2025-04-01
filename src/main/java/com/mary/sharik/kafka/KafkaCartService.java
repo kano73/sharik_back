@@ -85,7 +85,6 @@ public class KafkaCartService {
                     }
                 })
                 .exceptionally(ex -> {
-                    System.out.println("Exception in exceptionally: " + ex.getMessage());
                     throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }

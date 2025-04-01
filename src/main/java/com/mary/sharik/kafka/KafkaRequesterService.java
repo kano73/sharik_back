@@ -51,12 +51,8 @@ public class KafkaRequesterService {
 
                 for (Header header : response.headers()) {
                     if (header.key().equals(KafkaHeaders.EXCEPTION_MESSAGE)) {
-                        System.out.println("Exception found successfully");
-                        String s = new String(header.value(), StandardCharsets.UTF_8);
-
-                        System.out.println("here is how i found this message: \n" + s);
                         throw new MicroserviceExternalException(
-                                s
+                                new String(header.value(), StandardCharsets.UTF_8)
                         );
                     }
                 }
