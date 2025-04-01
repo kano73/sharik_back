@@ -6,7 +6,8 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class OrderRequest {
+public class OrderDetailsDTO {
+    private String userId;
     @NotBlank
     private String customAddress;
 }

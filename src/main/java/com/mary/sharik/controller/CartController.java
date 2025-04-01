@@ -1,7 +1,9 @@
 package com.mary.sharik.controller;
 
+import com.mary.sharik.kafka.KafkaCartService;
+import com.mary.sharik.kafka.KafkaHistoryService;
 import com.mary.sharik.model.dto.request.ActionWithCartDTO;
-import com.mary.sharik.model.dto.request.OrderRequest;
+import com.mary.sharik.model.dto.request.OrderDetailsDTO;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.OrdersHistory;
 import com.mary.sharik.service.CartService;
@@ -16,42 +18,50 @@ import java.util.List;
 public class CartController {
 
     private final CartService cartService;
+    private final KafkaCartService kafkaCartService;
+    private final KafkaHistoryService kafkaHistoryService;
 
 //    action
 
+
     @DeleteMapping("/empty_cart")
     public boolean emptyCart() {
-        cartService.emptyCart();
-        return true;
+        return kafkaCartService.emptyCart();
+//        cartService.emptyCart();
+//        return true;
     }
 
     @PostMapping("/add")
-    public boolean addItem(@RequestBody ActionWithCartDTO actionWithCartDTO) {
-        cartService.addToCart(actionWithCartDTO);
-        return true;
+    public boolean addItem(@RequestBody @Valid ActionWithCartDTO actionWithCartDTO) {
+        return kafkaCartService.addToCart(actionWithCartDTO);
+//        cartService.addToCart(actionWithCartDTO);
+//        return true;
     }
 
     @PostMapping("/change_amount")
-    public boolean reduceAmount(@RequestBody @Valid ActionWithCartDTO actionWithCartDTO) {
-        cartService.resetAmountOrDelete(actionWithCartDTO);
-        return true;
+    public boolean changeAmount(@RequestBody @Valid ActionWithCartDTO actionWithCartDTO) {
+        return kafkaCartService.changeAmount(actionWithCartDTO);
+//        cartService.resetAmountOrDelete(actionWithCartDTO);
+//        return true;
     }
-
-//    view
 
     @PostMapping("/make_order")
-    public boolean completeOrder(@RequestBody @Valid OrderRequest orderRequest) {
-        cartService.makeOrder(orderRequest.getCustomAddress());
-        return true;
+    public boolean completeOrder(@RequestBody @Valid OrderDetailsDTO orderDetailsDTO) {
+        return kafkaCartService.makeOrder(orderDetailsDTO);
+//        cartService.makeOrder(orderDetailsDTO.getCustomAddress());
+//        return true;
     }
 
+//view
     @GetMapping("/cart")
     public List<ProductAndQuantity> getActiveCart() {
-        return cartService.getCart();
+        return kafkaCartService.findCart();
+//        return cartService.getCart();
     }
 
     @GetMapping("/history")
     public OrdersHistory getHistory() {
-        return cartService.getOrdersHistory();
+        return kafkaHistoryService.findHistory();
+//        return cartService.getOrdersHistory();
     }
 }

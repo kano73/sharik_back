@@ -51,10 +51,13 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/logout","/is_user_admin", "/products", "/product").permitAll()
+                        .requestMatchers("/login", "/register",
+                                "/logout","/is_user_admin",
+                                "/products", "/product","/*").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login", "/register", "/products").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
+                        .anyRequest().permitAll()
+                        /*.anyRequest().authenticated()*/
                 )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

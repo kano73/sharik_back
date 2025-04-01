@@ -11,6 +11,8 @@ import org.springframework.kafka.listener.ContainerProperties;
 import org.springframework.kafka.listener.KafkaMessageListenerContainer;
 import org.springframework.kafka.requestreply.ReplyingKafkaTemplate;
 
+import java.time.Duration;
+
 @Configuration
 public class KafkaConfig {
 //product
@@ -121,14 +123,17 @@ public class KafkaConfig {
             ProducerFactory<String, String> pf,
             KafkaMessageListenerContainer<String, String> container)
     {
-        return new ReplyingKafkaTemplate<>(pf, container);
+        ReplyingKafkaTemplate<String, String, String> template = new ReplyingKafkaTemplate<>(pf, container);
+        template.setDefaultReplyTimeout(Duration.ofSeconds(10));
+        return template;
     }
 
     @Bean
     public KafkaMessageListenerContainer<String, String>
     replyContainer(ConsumerFactory<String, String> cf)
     {
-        ContainerProperties containerProperties = new ContainerProperties(KafkaTopicEnum.PRODUCT_REPLY_TOPIC.name());
+        ContainerProperties containerProperties = new ContainerProperties(KafkaTopicEnum.REPLY_TOPIC.name());
+
         return new KafkaMessageListenerContainer<>(cf, containerProperties);
     }
 }

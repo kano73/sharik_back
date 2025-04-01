@@ -3,7 +3,7 @@ package com.mary.sharik.controller;
 import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.service.ProductService;
-import com.mary.sharik.service.kafka.KafkaProductService;
+import com.mary.sharik.kafka.KafkaProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
