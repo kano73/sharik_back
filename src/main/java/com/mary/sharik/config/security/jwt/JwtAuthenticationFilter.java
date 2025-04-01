@@ -13,7 +13,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -33,7 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Set<String> ALLOWED_PATHS = Set.of("/login", "/register", "/logout", "/products", "/product");
 
     private final JwtTokenUtil jwtTokenUtil;
-    private final RedisTemplate<String, String> redisTemplate;
     private final MyUserRepository myUserRepository;
 
     private void sendErrorResponse(HttpServletResponse response) throws IOException {
@@ -98,12 +96,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // Validate token
         if (!jwtTokenUtil.isTokenValid(token)) {
-            sendErrorResponse(response);
-            return;
-        }
-
-        // Check if token is blacklisted in Redis
-        if (redisTemplate.hasKey("BL_" + token)) {
             sendErrorResponse(response);
             return;
         }

@@ -1,13 +1,11 @@
 package com.mary.sharik.service;
 
 import com.mary.sharik.config.security.jwt.JwtTokenUtil;
-import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.enums.TokenType;
 import com.mary.sharik.model.jwt.AuthRequest;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Getter
 public class AuthService {
-    private final RedisTemplate<String, ProductAndQuantity> redisTemplate;
     private final JwtTokenUtil jwtTokenUtil;
     private final MyUserService myUserService;
     private final AuthenticationManager authenticationManager;
