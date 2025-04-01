@@ -8,7 +8,7 @@ public enum KafkaTopicEnum {
     PRODUCT_SET_STATUS_TOPIC,
     PRODUCT_CREATE_TOPIC,
 
-    REPLY_TOPIC,
+    PRODUCT_REPLY_TOPIC,
 
     //HISTORY + CART
     CART_EMPTY_TOPIC,
@@ -19,4 +19,5 @@ public enum KafkaTopicEnum {
     HISTORY_VIEW_TOPIC,
     HISTORY_ALL_TOPIC,
 
+    HISTORY_REPLY_TOPIC
 }

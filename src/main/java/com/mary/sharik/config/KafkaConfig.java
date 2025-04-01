@@ -132,7 +132,7 @@ public class KafkaConfig {
     public KafkaMessageListenerContainer<String, String>
     replyContainer(ConsumerFactory<String, String> cf)
     {
-        ContainerProperties containerProperties = new ContainerProperties(KafkaTopicEnum.REPLY_TOPIC.name());
+        ContainerProperties containerProperties = new ContainerProperties(KafkaTopicEnum.PRODUCT_REPLY_TOPIC.name());
 
         return new KafkaMessageListenerContainer<>(cf, containerProperties);
     }

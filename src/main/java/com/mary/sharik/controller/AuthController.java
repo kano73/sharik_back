@@ -17,7 +17,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticate(@RequestBody @Valid AuthRequest request) {
-        return authService.refreshAndAccessForCurrentUser(request);
+        return authService.loginProcess(request);
     }
 
     @PostMapping("/logout")

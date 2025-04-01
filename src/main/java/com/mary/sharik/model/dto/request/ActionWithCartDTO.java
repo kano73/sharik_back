@@ -18,5 +18,5 @@ public class ActionWithCartDTO {
 
     @NotNull
     @Min(0)
-        private Integer productAmountLeft;
+    private Integer productAmountLeft;
 }

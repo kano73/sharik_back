@@ -2,7 +2,6 @@ package com.mary.sharik.kafka;
 
 import com.mary.sharik.exceptions.MicroserviceExternalException;
 import com.mary.sharik.model.enums.KafkaTopicEnum;
-import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
@@ -27,9 +26,7 @@ public class KafkaRequesterService {
     private ReplyingKafkaTemplate<String, String, String> replyingKafkaTemplate;
 
     public CompletableFuture<ConsumerRecord<String, String>> makeRequest(String topic, String value)
-            throws
-            ExecutionException,
-            InterruptedException, MicroserviceExternalException {
+            throws MicroserviceExternalException {
         // Создаем сообщение с заголовком reply-topic
         ProducerRecord<String, String> record =
                 new ProducerRecord<>(topic, value);
@@ -39,9 +36,8 @@ public class KafkaRequesterService {
         record.headers().add(new RecordHeader(KafkaHeaders.CORRELATION_ID,
                 correlationId.getBytes()));
         record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC,
-                KafkaTopicEnum.REPLY_TOPIC.name().getBytes()));
+                KafkaTopicEnum.PRODUCT_REPLY_TOPIC.name().getBytes()));
 
-        System.out.println("record: "+record+ "\n record.value(): "+record.value());
 
         // Отправляем запрос и ожидаем ответ (с таймаутом 5 секунд)
         RequestReplyFuture<String, String, String> future =
@@ -52,15 +48,15 @@ public class KafkaRequesterService {
             try {
                 // Получаем ответ
                 ConsumerRecord<String, String> response = future.get();
-                System.out.println("response: " + response);
 
                 for (Header header : response.headers()) {
-                    System.out.println(header.toString());
                     if (header.key().equals(KafkaHeaders.EXCEPTION_MESSAGE)) {
-                        throw new CompletionException(
-                                new MicroserviceExternalException(
-                                        new String(header.value(), StandardCharsets.UTF_8)
-                                )
+                        System.out.println("Exception found successfully");
+                        String s = new String(header.value(), StandardCharsets.UTF_8);
+
+                        System.out.println("here is how i found this message: \n" + s);
+                        throw new MicroserviceExternalException(
+                                s
                         );
                     }
                 }

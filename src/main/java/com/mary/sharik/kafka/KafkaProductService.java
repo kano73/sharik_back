@@ -3,13 +3,18 @@ package com.mary.sharik.kafka;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
+import com.mary.sharik.exceptions.MicroserviceExternalException;
 import com.mary.sharik.exceptions.ValidationFailedException;
 import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
+import com.mary.sharik.model.dto.request.SetProductStatusDTO;
 import com.mary.sharik.model.entity.OrdersHistory;
 import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.model.enums.KafkaTopicEnum;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +32,8 @@ public class KafkaProductService {
     @Autowired
     private KafkaRequesterService kafkaRequesterService;
 
-    public List<Product> requestProductsByFilter(ProductSearchFilterDTO filter) throws Exception {
+    @SneakyThrows
+    public List<Product> requestProductsByFilter(ProductSearchFilterDTO filter) {
         // Преобразуем фильтр в JSON
         String valueJson = objectMapper.writeValueAsString(filter);
 
@@ -45,11 +51,12 @@ public class KafkaProductService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 
-    public Boolean createProduct(AddProductDTO dto) throws Exception {
+    @SneakyThrows
+    public Boolean createProduct(AddProductDTO dto) {
         // Преобразуем фильтр в JSON
         String valueJson = objectMapper.writeValueAsString(dto);
 
@@ -65,11 +72,12 @@ public class KafkaProductService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 
-    public Product requestProductsById(String id) throws Exception {
+    @SneakyThrows
+    public Product requestProductsById(String id) {
         // Преобразуем фильтр в JSON
         String valueJson = objectMapper.writeValueAsString(id);
 
@@ -85,8 +93,28 @@ public class KafkaProductService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 
+    @SneakyThrows
+    public boolean setProductStatus(@Valid @NotNull SetProductStatusDTO dto) {
+        // Преобразуем фильтр в JSON
+        String valueJson = objectMapper.writeValueAsString(dto);
+
+        CompletableFuture<ConsumerRecord<String, String>> futureResponse =
+                kafkaRequesterService.makeRequest(KafkaTopicEnum.PRODUCT_SET_STATUS_TOPIC.name(), valueJson);
+
+        return futureResponse
+                .thenApply(response -> {
+                    try {
+                        return objectMapper.readValue(response.value(), Boolean.class);
+                    } catch (JsonProcessingException e) {
+                        throw new ValidationFailedException(e);
+                    }
+                })
+                .exceptionally(ex -> {
+                    throw new MicroserviceExternalException(ex.getMessage());
+                }).join();
+    }
 }

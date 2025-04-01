@@ -14,30 +14,16 @@ import java.util.List;
 @RestController
 public class ProductController {
 
-    private final ProductService productService;
     private final KafkaProductService kafkaProductService;
 
     @PostMapping("/products")
     public List<Product> getProducts(@RequestBody(required = false) @Valid ProductSearchFilterDTO dto) throws Exception {
-//        return productService.getProductsByFilterOnPage(dto);
-
-        System.out.println("got request");
-
-        List<Product> products = kafkaProductService.requestProductsByFilter(dto);
-
-        System.out.println(products);
-
-        return products;
-
+        return kafkaProductService.requestProductsByFilter(dto);
     }
-
 
     @GetMapping("/product")
     public Product getProduct(@RequestParam String id) throws Exception {
-//        return productService.findById(id);
-
         return kafkaProductService.requestProductsById(id);
     }
-
 }
 

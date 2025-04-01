@@ -16,6 +16,7 @@ public class MyUserPublicInfoDTO {
     private RoleEnum role;
 
     public static MyUserPublicInfoDTO fromUser(MyUser myUser) {
+        if(myUser == null) return null;
         MyUserPublicInfoDTO myUserPublicInfoDTO = new MyUserPublicInfoDTO();
         myUserPublicInfoDTO.setId(myUser.getId());
         myUserPublicInfoDTO.setFirstName(myUser.getFirstName());

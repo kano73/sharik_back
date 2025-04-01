@@ -1,5 +1,8 @@
 package com.mary.sharik.controller;
 
+import com.mary.sharik.kafka.KafkaCartService;
+import com.mary.sharik.kafka.KafkaHistoryService;
+import com.mary.sharik.kafka.KafkaProductService;
 import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.MyUserSearchFilterDTO;
 import com.mary.sharik.model.dto.request.SetProductStatusDTO;
@@ -25,9 +28,10 @@ import java.util.List;
 @RequestMapping("/admin")
 public class AdminPanelController {
 
-    private final CartService cartService;
-    private final ProductService productService;
     private final MyUserService myUserService;
+    private final KafkaCartService kafkaCartService;
+    private final KafkaHistoryService kafkaHistoryService;
+    private final KafkaProductService kafkaProductService;
 
 //    single
 
@@ -38,24 +42,23 @@ public class AdminPanelController {
 
     @GetMapping("/cart_of")
     public List<ProductAndQuantity> getActiveCart(@RequestParam @NotBlank String id) {
-        return cartService.getCartByUserId(id);
+        return kafkaCartService.getCartOfUserById(id);
     }
 
     @GetMapping("/history_of")
     public OrdersHistory getHistory(@RequestParam @NotBlank String id) {
-        return cartService.getHistoryOfUserById(id);
+        return kafkaHistoryService.getOrdersHistoryByUserId(id);
     }
 
 //    multiple
 
     @GetMapping("/all_histories")
     public List<OrdersHistory> getAllHistory(@RequestParam @DefaultValue("1") @Min(1) Integer page) {
-        return cartService.getWholeHistory(page);
+        return kafkaHistoryService.getWholeHistory(page);
     }
 
     @PostMapping("/all_users")
     public List<MyUserPublicInfoDTO> getAllUsers(@RequestBody MyUserSearchFilterDTO filter) {
-        filter.validate();
         return myUserService.getUsersByFilters(filter);
     }
 
@@ -63,12 +66,11 @@ public class AdminPanelController {
 
     @PostMapping("/set_product_status")
     public boolean setProductStatus(@RequestBody @Valid @NotNull SetProductStatusDTO dto) {
-        productService.setProductStatus(dto);
-        return true;
+        return kafkaProductService.setProductStatus(dto);
     }
 
     @PostMapping("/create_product")
-    public Product addProduct(@RequestBody AddProductDTO dto) {
-        return productService.create(dto);
+    public Boolean addProduct(@RequestBody AddProductDTO dto) {
+        return kafkaProductService.createProduct(dto);
     }
 }

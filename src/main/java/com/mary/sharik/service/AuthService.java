@@ -33,7 +33,7 @@ public class AuthService {
 //      7 days
     public static final Integer MAX_AGE_REFRESH = 604800;
 
-    public ResponseEntity<?> refreshAndAccessForCurrentUser(AuthRequest request) {
+    public ResponseEntity<?> loginProcess(AuthRequest request) {
         MyUser user = myUserService.findByEmail(request.getEmail());
 
         if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
@@ -58,7 +58,7 @@ public class AuthService {
         return ResponseCookie.from(type.toString(), token)
                 .httpOnly(true)
                 .path("/")
-                .maxAge(age) // 1 час
+                .maxAge(age)
                 .sameSite("Strict")
                 .build();
     }

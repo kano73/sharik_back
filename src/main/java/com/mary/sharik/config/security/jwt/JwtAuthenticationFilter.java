@@ -51,8 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        filterChain.doFilter(request, response);
-/*
         // Extract token
         Cookie[] cookies = request.getCookies();
         if (cookies == null || cookies.length == 0) {
@@ -137,6 +135,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 
-        filterChain.doFilter(request, response);*/
+        filterChain.doFilter(request, response);
     }
 }

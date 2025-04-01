@@ -15,6 +15,7 @@ import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.entity.Product;
 import com.mary.sharik.model.enums.KafkaTopicEnum;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -61,7 +62,7 @@ public class KafkaCartService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 
@@ -84,7 +85,8 @@ public class KafkaCartService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+                    System.out.println("Exception in exceptionally: " + ex.getMessage());
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 
@@ -107,7 +109,7 @@ public class KafkaCartService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 
@@ -130,7 +132,7 @@ public class KafkaCartService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 
@@ -138,7 +140,12 @@ public class KafkaCartService {
     public List<ProductAndQuantity> findCart() {
         MyUser user = authenticatedMyUserService.getCurrentUserAuthenticated();
 
-        String valueJson = objectMapper.writeValueAsString(user.getId());
+        return getCartOfUserById(user.getId());
+    }
+
+    @SneakyThrows
+    public List<ProductAndQuantity> getCartOfUserById(@NotBlank String id) {
+        String valueJson = objectMapper.writeValueAsString(id);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
                 kafkaRequesterService.makeRequest(KafkaTopicEnum.CART_VIEW_TOPIC.name(), valueJson);
@@ -153,7 +160,8 @@ public class KafkaCartService {
                     }
                 })
                 .exceptionally(ex -> {
-                    throw new CompletionException(ex);
+
+                    throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }
 }
