@@ -1,7 +1,7 @@
 package com.mary.sharik.model.dto.responce;
 
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.enumClass.RoleEnum;
+import com.mary.sharik.model.enumClass.Role;
 
 public record MyUserPublicInfoDTO(
         String id,
@@ -9,7 +9,7 @@ public record MyUserPublicInfoDTO(
         String lastName,
         String address,
         String email,
-        RoleEnum role
+        Role role
 ) {
     public static MyUserPublicInfoDTO fromUser(MyUser myUser) {
         return new MyUserPublicInfoDTO(

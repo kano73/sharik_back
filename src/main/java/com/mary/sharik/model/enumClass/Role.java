@@ -1,6 +1,6 @@
 package com.mary.sharik.model.enumClass;
 
-public enum RoleEnum {
+public enum Role {
     USER,
     ADMIN
 }

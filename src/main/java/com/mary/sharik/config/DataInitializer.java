@@ -1,7 +1,7 @@
 package com.mary.sharik.config;
 
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.enumClass.RoleEnum;
+import com.mary.sharik.model.enumClass.Role;
 import com.mary.sharik.repository.MyUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,7 +31,7 @@ public class DataInitializer implements ApplicationRunner {
             admin.setFirstName("MAIN-ADMIN");
             admin.setEmail(adminMail);
             admin.setPassword(passwordEncoder.encode(password));
-            admin.setRole(RoleEnum.ADMIN);
+            admin.setRole(Role.ADMIN);
             userRepository.save(admin);
         }
     }

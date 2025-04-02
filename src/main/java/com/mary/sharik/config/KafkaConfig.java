@@ -1,6 +1,6 @@
 package com.mary.sharik.config;
 
-import com.mary.sharik.model.enumClass.KafkaTopicEnum;
+import com.mary.sharik.model.enumClass.KafkaTopic;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ public class KafkaConfig {
 //product
     @Bean
     public NewTopic productsByFilter() {
-        return TopicBuilder.name(KafkaTopicEnum.PRODUCT_BY_FILTER_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.PRODUCT_BY_FILTER_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "3600000") // 1 час
@@ -27,7 +27,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic productById() {
-        return TopicBuilder.name(KafkaTopicEnum.PRODUCT_BY_ID_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.PRODUCT_BY_ID_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "3600000") // 1 час
@@ -36,7 +36,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic setProductStatus() {
-        return TopicBuilder.name(KafkaTopicEnum.PRODUCT_SET_STATUS_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.PRODUCT_SET_STATUS_TOPIC.name())
                 .partitions(1)
                 .replicas(2)
                 .config("retention.ms", "7200000") // 2 часа
@@ -45,7 +45,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic createProduct() {
-        return TopicBuilder.name(KafkaTopicEnum.PRODUCT_CREATE_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.PRODUCT_CREATE_TOPIC.name())
                 .partitions(1)
                 .replicas(2)
                 .config("retention.ms", "7200000") // 2 часа
@@ -56,7 +56,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic cartEmptyTopic() {
-        return TopicBuilder.name(KafkaTopicEnum.CART_EMPTY_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.CART_EMPTY_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "3600000") // 1 час
@@ -65,7 +65,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic cartAddTopic() {
-        return TopicBuilder.name(KafkaTopicEnum.CART_ADD_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.CART_ADD_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "3600000") // 1 час
@@ -74,7 +74,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic cartChangeAmountTopic() {
-        return TopicBuilder.name(KafkaTopicEnum.CART_CHANGE_AMOUNT_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.CART_CHANGE_AMOUNT_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "3600000") // 1 час
@@ -83,7 +83,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic cartOrderTopic() {
-        return TopicBuilder.name(KafkaTopicEnum.CART_ORDER_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.CART_ORDER_TOPIC.name())
                 .partitions(1)
                 .replicas(2)
                 .config("retention.ms", "7200000") // 2 часа
@@ -92,7 +92,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic cartViewTopic() {
-        return TopicBuilder.name(KafkaTopicEnum.CART_VIEW_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.CART_VIEW_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "3600000")
@@ -101,7 +101,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic historyViewTopic() {
-        return TopicBuilder.name(KafkaTopicEnum.HISTORY_VIEW_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.HISTORY_VIEW_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "3600000")
@@ -110,7 +110,7 @@ public class KafkaConfig {
 
     @Bean
     public NewTopic historyAllTopic() {
-        return TopicBuilder.name(KafkaTopicEnum.HISTORY_ALL_TOPIC.name())
+        return TopicBuilder.name(KafkaTopic.HISTORY_ALL_TOPIC.name())
                 .partitions(1)
                 .replicas(1)
                 .config("retention.ms", "7200000")
@@ -132,7 +132,7 @@ public class KafkaConfig {
     public KafkaMessageListenerContainer<String, String>
     replyContainer(ConsumerFactory<String, String> cf)
     {
-        ContainerProperties containerProperties = new ContainerProperties(KafkaTopicEnum.PRODUCT_REPLY_TOPIC.name());
+        ContainerProperties containerProperties = new ContainerProperties(KafkaTopic.PRODUCT_REPLY_TOPIC.name());
 
         return new KafkaMessageListenerContainer<>(cf, containerProperties);
     }

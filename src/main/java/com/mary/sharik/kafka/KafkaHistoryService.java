@@ -8,7 +8,7 @@ import com.mary.sharik.exception.MicroserviceExternalException;
 import com.mary.sharik.exception.ValidationFailedException;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.entity.OrdersHistory;
-import com.mary.sharik.model.enumClass.KafkaTopicEnum;
+import com.mary.sharik.model.enumClass.KafkaTopic;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -31,7 +31,7 @@ public class KafkaHistoryService {
         String valueJson = objectMapper.writeValueAsString(page);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.HISTORY_ALL_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.HISTORY_ALL_TOPIC.name(), valueJson);
 
         return (List<OrdersHistory>) futureResponse
                 .thenApply(response -> {
@@ -60,7 +60,7 @@ public class KafkaHistoryService {
         String valueJson = objectMapper.writeValueAsString(userId);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.HISTORY_VIEW_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.HISTORY_VIEW_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {

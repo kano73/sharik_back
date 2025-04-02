@@ -7,7 +7,7 @@ import com.mary.sharik.model.dto.request.MyUserSearchFilterDTO;
 import com.mary.sharik.model.dto.request.MyUserUpdateDTO;
 import com.mary.sharik.model.dto.responce.MyUserPublicInfoDTO;
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.enumClass.RoleEnum;
+import com.mary.sharik.model.enumClass.Role;
 import com.mary.sharik.repository.MyUserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -19,9 +19,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Service
@@ -41,7 +40,7 @@ public class MyUserService {
         myUser.setEmail(dto.getEmail());
         myUser.setAddress(dto.getAddress());
         myUser.setPassword(passwordEncoder.encode(dto.getPassword()));
-        myUser.setRole(RoleEnum.USER);
+        myUser.setRole(Role.USER);
 
         myUserValidationService.credentialsUniqueOrThrow(myUser);
 
@@ -76,37 +75,19 @@ public class MyUserService {
     }
 
     public List<MyUserPublicInfoDTO> getUsersByFilters(@NotNull MyUserSearchFilterDTO filter) {
-        if (filter.getId()!=null && filter.getId().isEmpty()) {
-            filter.setId(null);
-        }
-
-        List<MyUserPublicInfoDTO> byFilters;
-
-        if(filter.getId()!=null && !Objects.equals(filter.getId(), "")){
-            byFilters = myUserRepository.findById(filter.getId()).stream()
-                    .map(MyUserPublicInfoDTO::fromUser).toList();
-        }else if(filter.getEmail()!=null && !Objects.equals(filter.getEmail(), "")){
-            MyUser myUser = myUserRepository.findByEmailEqualsIgnoreCase(filter.getEmail()).orElse(null);
-            if(myUser == null){
-                return new ArrayList<>();
-            }
-            byFilters = List.of(MyUserPublicInfoDTO.fromUser(myUser));
-        }else if(filter.getFirstOrLastName()!=null && !Objects.equals(filter.getFirstOrLastName(), "")){
-            byFilters = myUserRepository.findByLastNameContainingIgnoreCaseOrFirstNameContainingIgnoreCase(
-                    filter.getFirstOrLastName(),
-                    filter.getFirstOrLastName(),
-                    PageRequest.of(filter.getPage()-1 , PAGE_SIZE)).getContent();
-
-        } else{
-            byFilters = myUserRepository.findAll(PageRequest.of(filter.getPage()-1 , PAGE_SIZE)).stream().map(MyUserPublicInfoDTO::fromUser).toList();
-        }
-
-        return byFilters;
+        return myUserRepository.
+                findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrId(
+                        filter.getFirstOrLastName(),
+                        filter.getFirstOrLastName(),
+                        filter.getEmail(),
+                        filter.getId(),
+                        PageRequest.of(filter.getPage()-1 , PAGE_SIZE)
+                ).stream().map(MyUserPublicInfoDTO::fromUser).collect(Collectors.toList());
     }
 
     public boolean isUserAdmin() {
         try {
-            return authenticatedMyUserService.getCurrentUserAuthenticated().getRole().equals(RoleEnum.ADMIN);
+            return authenticatedMyUserService.getCurrentUserAuthenticated().getRole().equals(Role.ADMIN);
         }
         catch (NoDataFoundException e) {
             return false;

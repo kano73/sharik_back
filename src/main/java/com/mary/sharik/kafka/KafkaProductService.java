@@ -9,7 +9,7 @@ import com.mary.sharik.model.dto.request.AddProductDTO;
 import com.mary.sharik.model.dto.request.ProductSearchFilterDTO;
 import com.mary.sharik.model.dto.request.SetProductStatusDTO;
 import com.mary.sharik.model.entity.Product;
-import com.mary.sharik.model.enumClass.KafkaTopicEnum;
+import com.mary.sharik.model.enumClass.KafkaTopic;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class KafkaProductService {
         String valueJson = objectMapper.writeValueAsString(filter);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.PRODUCT_BY_FILTER_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_BY_FILTER_TOPIC.name(), valueJson);
 
         return (List<Product>) futureResponse
                 .thenApply(response -> {
@@ -56,7 +56,7 @@ public class KafkaProductService {
         String valueJson = objectMapper.writeValueAsString(dto);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.PRODUCT_CREATE_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_CREATE_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {
@@ -77,7 +77,7 @@ public class KafkaProductService {
         String valueJson = objectMapper.writeValueAsString(id);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.PRODUCT_BY_ID_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_BY_ID_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {
@@ -98,7 +98,7 @@ public class KafkaProductService {
         String valueJson = objectMapper.writeValueAsString(dto);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.PRODUCT_SET_STATUS_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_SET_STATUS_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {

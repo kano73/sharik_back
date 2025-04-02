@@ -1,7 +1,7 @@
 package com.mary.sharik.kafka;
 
 import com.mary.sharik.exception.MicroserviceExternalException;
-import com.mary.sharik.model.enumClass.KafkaTopicEnum;
+import com.mary.sharik.model.enumClass.KafkaTopic;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;
@@ -36,7 +36,7 @@ public class KafkaRequesterService {
         record.headers().add(new RecordHeader(KafkaHeaders.CORRELATION_ID,
                 correlationId.getBytes()));
         record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC,
-                KafkaTopicEnum.PRODUCT_REPLY_TOPIC.name().getBytes()));
+                KafkaTopic.PRODUCT_REPLY_TOPIC.name().getBytes()));
 
 
         // Отправляем запрос и ожидаем ответ (с таймаутом 5 секунд)

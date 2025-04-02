@@ -2,7 +2,7 @@ package com.mary.sharik.model.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mary.sharik.model.enumClass.SortProductByEnum;
+import com.mary.sharik.model.enumClass.SortProductBy;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;
@@ -29,7 +29,7 @@ public class ProductSearchFilterDTO {
     private Integer page ;
 
     @Enumerated(EnumType.STRING)
-    private SortProductByEnum sortBy ;
+    private SortProductBy sortBy ;
 
     @Enumerated(EnumType.STRING)
     private Sort.Direction sortDirection;
@@ -39,14 +39,14 @@ public class ProductSearchFilterDTO {
             @JsonProperty("nameAndDescription") String nameAndDescription,
             @JsonProperty("categories") List<String> categories,
             @JsonProperty("page") Integer page,
-            @JsonProperty("sortBy") SortProductByEnum sortBy,
+            @JsonProperty("sortBy") SortProductBy sortBy,
             @JsonProperty("sortDirection") Sort.Direction sortDirection) {
 
         this.nameAndDescription = (nameAndDescription == null || nameAndDescription.isEmpty()) ? "" : nameAndDescription;
 //price adjustment is in product_microservice
         this.categories = (categories == null) ? new ArrayList<>() : categories;
         this.page = (page == null || page < 1) ? 1 : page;
-        this.sortBy = (sortBy == null) ? SortProductByEnum.NAME : sortBy;
+        this.sortBy = (sortBy == null) ? SortProductBy.NAME : sortBy;
         this.sortDirection = (sortDirection == null) ? Sort.Direction.ASC : sortDirection;
     }
 

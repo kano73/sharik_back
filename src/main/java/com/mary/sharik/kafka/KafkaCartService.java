@@ -10,7 +10,7 @@ import com.mary.sharik.model.dto.request.ActionWithCartDTO;
 import com.mary.sharik.model.dto.request.OrderDetailsDTO;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.enumClass.KafkaTopicEnum;
+import com.mary.sharik.model.enumClass.KafkaTopic;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -35,7 +35,7 @@ public class KafkaCartService {
         String valueJson = objectMapper.writeValueAsString(user.getId());
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.CART_EMPTY_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.CART_EMPTY_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {
@@ -58,7 +58,7 @@ public class KafkaCartService {
         String valueJson = objectMapper.writeValueAsString(actionWithCartDTO);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.CART_ADD_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.CART_ADD_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {
@@ -81,7 +81,7 @@ public class KafkaCartService {
         String valueJson = objectMapper.writeValueAsString(actionWithCartDTO);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.CART_CHANGE_AMOUNT_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.CART_CHANGE_AMOUNT_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {
@@ -104,7 +104,7 @@ public class KafkaCartService {
         String valueJson = objectMapper.writeValueAsString(orderDetailsDTO);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.CART_ORDER_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.CART_ORDER_TOPIC.name(), valueJson);
 
         return futureResponse
                 .thenApply(response -> {
@@ -131,7 +131,7 @@ public class KafkaCartService {
         String valueJson = objectMapper.writeValueAsString(id);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopicEnum.CART_VIEW_TOPIC.name(), valueJson);
+                kafkaRequesterService.makeRequest(KafkaTopic.CART_VIEW_TOPIC.name(), valueJson);
 
         return (List<ProductAndQuantity>) futureResponse
                 .thenApply(response -> {
