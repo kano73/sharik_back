@@ -1,4 +1,4 @@
-package com.mary.sharik.exceptions;
+package com.mary.sharik.exception;
 
 public class NoDataFoundException extends CustomHandleRuntimeException {
     public NoDataFoundException(String message) {

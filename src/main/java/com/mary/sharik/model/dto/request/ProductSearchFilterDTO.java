@@ -2,7 +2,7 @@ package com.mary.sharik.model.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.mary.sharik.model.enums.SortProductByEnum;
+import com.mary.sharik.model.enumClass.SortProductByEnum;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.*;

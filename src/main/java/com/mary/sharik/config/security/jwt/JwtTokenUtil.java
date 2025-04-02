@@ -1,16 +1,17 @@
 package com.mary.sharik.config.security.jwt;
 
-import io.jsonwebtoken.*;
-import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.time.Duration;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
 
 @Component
 public class JwtTokenUtil {
@@ -19,10 +20,10 @@ public class JwtTokenUtil {
     private String secretKey;
 
     @Value("${max.age.access}")
-    private long expirationTimeAccess;
+    private Duration expirationTimeAccess;
 
     @Value("${max.age.refresh}")
-    private long expirationTimeRefresh;
+    private Duration expirationTimeRefresh;
 
     public String generateAccessToken(String id) {
         Map<String, Object> claims = new HashMap<>();
@@ -38,10 +39,10 @@ public class JwtTokenUtil {
         return buildToken(claims, expirationTimeRefresh);
     }
 
-    private String buildToken(Map<String, Object> claims, long expirationTimeRefresh) {
+    private String buildToken(Map<String, Object> claims, Duration expirationTimeRefresh) {
         claims.put("iat", new Date());
 
-        claims.put("exp", new Date(System.currentTimeMillis() + expirationTimeRefresh));
+        claims.put("exp", new Date(System.currentTimeMillis() + expirationTimeRefresh.toMillis()));
 
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
         JwtBuilder builder = Jwts.builder().signWith(key);
@@ -62,21 +63,6 @@ public class JwtTokenUtil {
             return claims.getExpiration().before(new Date());
         } catch (Exception e) {
             return true;
-        }
-    }
-
-    public boolean isTokenValid(String token) {
-        try {
-            SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
-
-            Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token).getPayload();
-
-            return true;
-        } catch (Exception e) {
-            return false;
         }
     }
 

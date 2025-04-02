@@ -1,7 +1,7 @@
-package com.mary.sharik.exceptions.handler;
+package com.mary.sharik.exception.handler;
 
-import com.mary.sharik.exceptions.CustomHandleRuntimeException;
-import com.mary.sharik.exceptions.MicroserviceExternalException;
+import com.mary.sharik.exception.CustomHandleRuntimeException;
+import com.mary.sharik.exception.MicroserviceExternalException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;

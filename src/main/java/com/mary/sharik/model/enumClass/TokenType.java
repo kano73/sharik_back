@@ -1,4 +1,4 @@
-package com.mary.sharik.model.enums;
+package com.mary.sharik.model.enumClass;
 
 public enum TokenType {
     accessToken,

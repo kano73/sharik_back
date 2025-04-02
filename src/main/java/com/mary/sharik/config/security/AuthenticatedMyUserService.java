@@ -1,6 +1,6 @@
 package com.mary.sharik.config.security;
 
-import com.mary.sharik.exceptions.NoDataFoundException;
+import com.mary.sharik.exception.NoDataFoundException;
 import com.mary.sharik.model.details.MyUserDetails;
 import com.mary.sharik.model.entity.MyUser;
 import org.springframework.security.core.Authentication;

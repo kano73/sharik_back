@@ -1,6 +1,6 @@
 package com.mary.sharik.service;
 
-import com.mary.sharik.exceptions.CredentialsNotUniqueExceptions;
+import com.mary.sharik.exception.CredentialsNotUniqueExceptions;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.repository.MyUserRepository;
 import org.springframework.stereotype.Service;

@@ -1,7 +1,7 @@
 package com.mary.sharik.config;
 
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.enums.RoleEnum;
+import com.mary.sharik.model.enumClass.RoleEnum;
 import com.mary.sharik.repository.MyUserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

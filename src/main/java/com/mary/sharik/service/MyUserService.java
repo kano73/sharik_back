@@ -1,13 +1,13 @@
 package com.mary.sharik.service;
 
 import com.mary.sharik.config.security.AuthenticatedMyUserService;
-import com.mary.sharik.exceptions.NoDataFoundException;
+import com.mary.sharik.exception.NoDataFoundException;
 import com.mary.sharik.model.dto.request.MyUserRegisterDTO;
 import com.mary.sharik.model.dto.request.MyUserSearchFilterDTO;
 import com.mary.sharik.model.dto.request.MyUserUpdateDTO;
 import com.mary.sharik.model.dto.responce.MyUserPublicInfoDTO;
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.enums.RoleEnum;
+import com.mary.sharik.model.enumClass.RoleEnum;
 import com.mary.sharik.repository.MyUserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -76,7 +76,10 @@ public class MyUserService {
     }
 
     public List<MyUserPublicInfoDTO> getUsersByFilters(@NotNull MyUserSearchFilterDTO filter) {
-        filter.validate();
+        if (filter.getId()!=null && filter.getId().isEmpty()) {
+            filter.setId(null);
+        }
+
         List<MyUserPublicInfoDTO> byFilters;
 
         if(filter.getId()!=null && !Objects.equals(filter.getId(), "")){

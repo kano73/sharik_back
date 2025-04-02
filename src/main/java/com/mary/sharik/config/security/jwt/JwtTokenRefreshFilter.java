@@ -1,9 +1,9 @@
 package com.mary.sharik.config.security.jwt;
 
-import com.mary.sharik.exceptions.NoDataFoundException;
+import com.mary.sharik.exception.NoDataFoundException;
 import com.mary.sharik.model.details.MyUserDetails;
 import com.mary.sharik.model.entity.MyUser;
-import com.mary.sharik.model.enums.TokenType;
+import com.mary.sharik.model.enumClass.TokenType;
 import com.mary.sharik.repository.MyUserRepository;
 import com.mary.sharik.service.AuthService;
 import io.jsonwebtoken.Claims;
@@ -23,102 +23,75 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 @RequiredArgsConstructor
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtTokenRefreshFilter extends OncePerRequestFilter {
 
-    private static final Set<String> ALLOWED_PATHS = Set.of("/login", "/register", "/logout", "/products", "/product");
-
-    private final JwtTokenUtil jwtTokenUtil;
     private final MyUserRepository myUserRepository;
-
-    private void sendErrorResponse(HttpServletResponse response) throws IOException {
-        response.setContentType("application/json");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("please login");
-        response.getWriter().flush();
-    }
+    private final AuthService authService;
+    private final JwtTokenUtil jwtTokenUtil;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
-        if (ALLOWED_PATHS.contains(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
 
         // Extract token
         Cookie[] cookies = request.getCookies();
         if (cookies == null || cookies.length == 0) {
-            sendErrorResponse( response);
+            filterChain.doFilter(request, response);
             return;
         }
 
-        String token = Arrays.stream(cookies).filter(item->
-                item.getName().equals("accessToken"))
-                .findFirst().map(Cookie::getValue).orElse(null);
-
-        if(jwtTokenUtil.isTokenExpired(token)){
-            final String refreshToken = Arrays.stream(cookies).filter(item->
-                            item.getName().equals("refreshToken"))
+        String token = Arrays.stream(cookies).filter(item -> item.getName().equals("accessToken"))
                     .findFirst().map(Cookie::getValue).orElse(null);
 
-            if(jwtTokenUtil.isTokenExpired(refreshToken)){
-                sendErrorResponse(response);
+        if (jwtTokenUtil.isTokenExpired(token)) {
+            final String refreshToken = Arrays.stream(cookies).filter(item -> item.getName()
+                    .equals("refreshToken")).findFirst().map(Cookie::getValue).orElse(null);
+
+            if (jwtTokenUtil.isTokenExpired(refreshToken)) {
+                filterChain.doFilter(request, response);
                 return;
             }
 
             // Get claims
             Claims claims = jwtTokenUtil.extractAllClaims(refreshToken);
             if (claims == null) {
-                sendErrorResponse(response);
+                filterChain.doFilter(request, response);
                 return;
             }
 
             String userId = claims.get("id", String.class);
 
-            token = jwtTokenUtil.generateAccessToken(userId);
-
-            ResponseCookie accessCookie = AuthService.tokenToCookie(
-                    token ,
-                    TokenType.accessToken,
-                    AuthService.MAX_AGE_ACCESS);
-            ResponseCookie refreshCookie = AuthService.tokenToCookie(
-                    jwtTokenUtil.generateRefreshToken(userId),
-                    TokenType.refreshToken,
-                    AuthService.MAX_AGE_REFRESH);
+            ResponseCookie accessCookie = authService.tokenToCookie
+                    (jwtTokenUtil.generateAccessToken(userId), TokenType.accessToken);
+            ResponseCookie refreshCookie = authService.tokenToCookie
+                    (jwtTokenUtil.generateRefreshToken(userId), TokenType.refreshToken);
 
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         }
 
-        // Validate token
-        if (!jwtTokenUtil.isTokenValid(token)) {
-            sendErrorResponse(response);
-            return;
-        }
-
         // Get claims
         Claims claims = jwtTokenUtil.extractAllClaims(token);
         if (claims == null) {
-            sendErrorResponse(response);
             return;
         }
 
         // Set authentication
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             String userId = claims.get("id", String.class);
-            MyUser user = myUserRepository.findById(userId).orElseThrow(
-                    ()-> new NoDataFoundException("No user found with id " + userId)
-            );
+            MyUser user = myUserRepository.findById(userId).orElseThrow(() ->
+                    new NoDataFoundException("No user found with id " + userId));
 
             String role = user.getRole().name();
 
-            Collection<SimpleGrantedAuthority> authorities = Collections.singleton(
-                    new SimpleGrantedAuthority("ROLE_" + role)
-            );
+            Collection<SimpleGrantedAuthority> authorities = Collections.singleton
+                    (new SimpleGrantedAuthority("ROLE_" + role));
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(new MyUserDetails(user), null, authorities);

@@ -23,9 +23,4 @@ public class MyUserSearchFilterDTO {
                 '}';
     }
 
-    public void validate() {
-        if (id!=null && id.isEmpty()) {
-            id=null;
-        }
-    }
 }

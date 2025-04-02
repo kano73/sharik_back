@@ -1,7 +1,7 @@
 package com.mary.sharik.kafka;
 
-import com.mary.sharik.exceptions.MicroserviceExternalException;
-import com.mary.sharik.model.enums.KafkaTopicEnum;
+import com.mary.sharik.exception.MicroserviceExternalException;
+import com.mary.sharik.model.enumClass.KafkaTopicEnum;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.Header;

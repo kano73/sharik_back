@@ -1,4 +1,4 @@
-package com.mary.sharik.exceptions;
+package com.mary.sharik.exception;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

@@ -1,6 +1,6 @@
 package com.mary.sharik.model.entity;
 
-import com.mary.sharik.model.enums.OrderStatusEnum;
+import com.mary.sharik.model.enumClass.OrderStatusEnum;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;

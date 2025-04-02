@@ -1,6 +1,6 @@
 package com.mary.sharik.config;
 
-import com.mary.sharik.model.enums.KafkaTopicEnum;
+import com.mary.sharik.model.enumClass.KafkaTopicEnum;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

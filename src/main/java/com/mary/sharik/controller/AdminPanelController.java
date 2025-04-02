@@ -30,8 +30,6 @@ public class AdminPanelController {
     private final KafkaHistoryService kafkaHistoryService;
     private final KafkaProductService kafkaProductService;
 
-//    single
-
     @GetMapping("/profile_of")
     public MyUserPublicInfoDTO getUsersInfo(@RequestParam @NotBlank String id) {
         return myUserService.getUsersInfoById(id);
@@ -47,8 +45,6 @@ public class AdminPanelController {
         return kafkaHistoryService.getOrdersHistoryByUserId(id);
     }
 
-//    multiple
-
     @GetMapping("/all_histories")
     public List<OrdersHistory> getAllHistory(@RequestParam @DefaultValue("1") @Min(1) Integer page) {
         return kafkaHistoryService.getWholeHistory(page);
@@ -58,8 +54,6 @@ public class AdminPanelController {
     public List<MyUserPublicInfoDTO> getAllUsers(@RequestBody MyUserSearchFilterDTO filter) {
         return myUserService.getUsersByFilters(filter);
     }
-
-//    action
 
     @PostMapping("/set_product_status")
     public boolean setProductStatus(@RequestBody @Valid @NotNull SetProductStatusDTO dto) {
