@@ -1,5 +1,9 @@
 package com.mary.sharik.service;
 
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.gson.GsonFactory;
 import com.mary.sharik.config.security.jwt.JwtTokenUtil;
 import com.mary.sharik.exception.ValidationFailedException;
 import com.mary.sharik.model.entity.MyUser;
@@ -16,7 +20,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.time.Duration;
+import java.util.Collections;
 
 @RequiredArgsConstructor
 @Service
@@ -27,11 +34,48 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
 
+    private final GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
+            new NetHttpTransport(),
+            GsonFactory.getDefaultInstance()
+    )
+            .setAudience(Collections.singletonList("your-google-client-id")) // Замените на ваш Client ID
+            .build();
+
+
     @Value("${max.age.access}")
     private Duration expirationTimeAccess;
 
     @Value("${max.age.refresh}")
     private Duration expirationTimeRefresh;
+
+    public ResponseEntity<?> loginWithGoogleIdToken(String idTokenString) {
+        try {
+            // Проверяем и парсим ID Token
+            GoogleIdToken idToken = verifier.verify(idTokenString);
+            if (idToken == null) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Google ID token");
+            }
+
+            // Извлекаем данные пользователя
+            GoogleIdToken.Payload payload = idToken.getPayload();
+            String email = payload.getEmail();
+            if (email == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not found in token");
+            }
+
+            // Находим или создаем пользователя
+            MyUser user = myUserService.findByEmail(email);
+            if (user == null) {
+                throw new ValidationFailedException("You need to register");
+            }
+
+            // Генерируем токены
+            return generateTokensWithId(user.getId());
+
+        } catch (GeneralSecurityException | IOException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error login: " + e.getMessage());
+        }
+    }
 
     public ResponseEntity<?> loginProcess(AuthRequest request) {
         MyUser user = myUserService.findByEmail(request.getEmail());
@@ -44,12 +88,8 @@ public class AuthService {
     }
 
     public ResponseEntity<?> generateTokensWithId(String id) {
-        String token = jwtTokenUtil.generateAccessToken(
-                id
-        );
-        String refreshToken = jwtTokenUtil.generateRefreshToken(
-                id
-        );
+        String token = jwtTokenUtil.generateAccessToken(id);
+        String refreshToken = jwtTokenUtil.generateRefreshToken(id);
 
         return getResponseWithTokens(token, refreshToken);
     }
@@ -95,4 +135,5 @@ public class AuthService {
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body("Logged out");
     }
+
 }

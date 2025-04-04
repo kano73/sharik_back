@@ -1,9 +1,9 @@
 package com.mary.sharik.config.security;
 
-import com.mary.sharik.config.security.jwt.JwtTokenRefreshFilter;
+import com.mary.sharik.config.security.jwt.JwtRefreshTokensFilter;
 import com.mary.sharik.service.MyUserDetailsService;
+import com.mary.sharik.service.MyUserValidationService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,10 +14,13 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -25,16 +28,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig implements WebMvcConfigurer {
-
-    @Value("${jwt.secret}")
-    private String jwtSecret;
 
     private final MyUserDetailsService userDetailsService;
 
@@ -52,30 +49,43 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtTokenRefreshFilter jwtTokenRefreshFilter) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder,
+                                                   JwtRefreshTokensFilter jwtRefreshTokensFilter,
+                                                   MyUserValidationService myUserValidationService)
+            throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register",
-                                "/logout","/is_user_admin").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login", "/register").permitAll()
+                        .requestMatchers("/login", "/register", "/logout",
+                                "/is_user_admin", "/products", "/product").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login", "/register", "/products").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
-                        jwt.decoder(jwtDecoder())
-                ))
-                .addFilterBefore(jwtTokenRefreshFilter, UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder)
+                        )
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .authorizationEndpoint(auth -> auth
+                                .baseUri("/oauth2/authorize"))
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(oAuth2UserService(myUserValidationService))))
+                .addFilterBefore(jwtRefreshTokensFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(AbstractHttpConfigurer::disable);
 
         return http.build();
     }
 
     @Bean
-    public JwtDecoder jwtDecoder() {
-        SecretKey key = new SecretKeySpec(jwtSecret.getBytes(), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(key).build();
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService
+            (MyUserValidationService myUserValidationService) {
+        return new CustomOAuth2UserService(myUserValidationService);
     }
 
     @Bean

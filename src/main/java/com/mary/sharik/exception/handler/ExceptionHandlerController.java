@@ -17,7 +17,7 @@ public class ExceptionHandlerController {
     public String customRuntime (CompletionException exception){
         String rowMessage = exception.getMessage().substring(0, exception.getMessage().length()-1);
 
-        return rowMessage.substring(rowMessage.lastIndexOf('"')+1);
+        return rowMessage.substring(rowMessage.lastIndexOf('"') + 1);
     }
 
     @ExceptionHandler(MicroserviceExternalException.class)

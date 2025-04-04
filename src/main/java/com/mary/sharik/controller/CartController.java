@@ -6,10 +6,12 @@ import com.mary.sharik.model.dto.request.OrderDetailsDTO;
 import com.mary.sharik.model.dto.storage.ProductAndQuantity;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class CartController {
@@ -36,9 +38,9 @@ public class CartController {
         return kafkaCartService.makeOrder(orderDetailsDTO);
     }
 
-//view
     @GetMapping("/cart")
     public List<ProductAndQuantity> getActiveCart() {
+        log.info("got request to get cart");
         return kafkaCartService.findCart();
     }
 }

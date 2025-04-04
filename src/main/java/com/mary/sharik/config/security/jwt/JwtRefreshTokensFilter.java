@@ -6,7 +6,6 @@ import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.enumClass.TokenType;
 import com.mary.sharik.repository.MyUserRepository;
 import com.mary.sharik.service.AuthService;
-import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -23,21 +22,25 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Component
-public class JwtTokenRefreshFilter extends OncePerRequestFilter {
+public class JwtRefreshTokensFilter extends OncePerRequestFilter {
 
+    private static final Set<String> ALLOWED_PATHS = Set.of("/login", "/register", "/logout");
+
+    private final JwtTokenUtil jwtTokenUtil;
     private final MyUserRepository myUserRepository;
     private final AuthService authService;
-    private final JwtTokenUtil jwtTokenUtil;
 
     @Override
-    public void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
+        if (ALLOWED_PATHS.contains(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Extract token
         Cookie[] cookies = request.getCookies();
@@ -46,29 +49,27 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = Arrays.stream(cookies).filter(item -> item.getName().equals("accessToken"))
+        String token = Arrays.stream(cookies).filter(item->
+                        item.getName().equals(TokenType.accessToken.name()))
+                .findFirst().map(Cookie::getValue).orElse(null);
+
+        if(jwtTokenUtil.isTokenNotValid(token)){
+            final String refreshToken = Arrays.stream(cookies).filter(item->
+                            item.getName().equals("refreshToken"))
                     .findFirst().map(Cookie::getValue).orElse(null);
 
-        if (jwtTokenUtil.isTokenExpired(token)) {
-            final String refreshToken = Arrays.stream(cookies).filter(item -> item.getName()
-                    .equals("refreshToken")).findFirst().map(Cookie::getValue).orElse(null);
-
-            if (jwtTokenUtil.isTokenExpired(refreshToken)) {
+            if(jwtTokenUtil.isTokenNotValid(refreshToken)){
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            // Get claims
-            Claims claims = jwtTokenUtil.extractAllClaims(refreshToken);
-            if (claims == null) {
-                filterChain.doFilter(request, response);
-                return;
-            }
+            String userId = jwtTokenUtil.getUserIdFromToken(refreshToken);
 
-            String userId = claims.get("id", String.class);
+
+            token = jwtTokenUtil.generateAccessToken(userId);
 
             ResponseCookie accessCookie = authService.tokenToCookie
-                    (jwtTokenUtil.generateAccessToken(userId), TokenType.accessToken);
+                    (token, TokenType.accessToken);
             ResponseCookie refreshCookie = authService.tokenToCookie
                     (jwtTokenUtil.generateRefreshToken(userId), TokenType.refreshToken);
 
@@ -76,22 +77,19 @@ public class JwtTokenRefreshFilter extends OncePerRequestFilter {
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         }
 
-        // Get claims
-        Claims claims = jwtTokenUtil.extractAllClaims(token);
-        if (claims == null) {
-            return;
-        }
-
         // Set authentication
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            String userId = claims.get("id", String.class);
-            MyUser user = myUserRepository.findById(userId).orElseThrow(() ->
-                    new NoDataFoundException("No user found with id " + userId));
+            String userId = jwtTokenUtil.getUserIdFromToken(token);
+
+            MyUser user = myUserRepository.findById(userId).orElseThrow(
+                    ()-> new NoDataFoundException("No user found with id " + userId)
+            );
 
             String role = user.getRole().name();
 
-            Collection<SimpleGrantedAuthority> authorities = Collections.singleton
-                    (new SimpleGrantedAuthority("ROLE_" + role));
+            Collection<SimpleGrantedAuthority> authorities = Collections.singleton(
+                    new SimpleGrantedAuthority("ROLE_" + role)
+            );
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(new MyUserDetails(user), null, authorities);

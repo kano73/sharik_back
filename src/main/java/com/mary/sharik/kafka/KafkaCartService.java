@@ -14,12 +14,14 @@ import com.mary.sharik.model.enumClass.KafkaTopic;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class KafkaCartService {
@@ -123,6 +125,8 @@ public class KafkaCartService {
     public List<ProductAndQuantity> findCart() {
         MyUser user = authenticatedMyUserService.getCurrentUserAuthenticated();
 
+        log.info("id for cart: {}", user.getId());
+
         return getCartOfUserById(user.getId());
     }
 
@@ -135,15 +139,16 @@ public class KafkaCartService {
 
         return (List<ProductAndQuantity>) futureResponse
                 .thenApply(response -> {
-                    CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, ProductAndQuantity.class);
+                    CollectionType listType = objectMapper.getTypeFactory()
+                            .constructCollectionType(List.class, ProductAndQuantity.class);
                     try {
                         return objectMapper.readValue(response.value(), listType);
                     } catch (JsonProcessingException e) {
+                        log.error(String.valueOf(e));
                         throw new ValidationFailedException(e);
                     }
                 })
                 .exceptionally(ex -> {
-
                     throw new MicroserviceExternalException(ex.getMessage());
                 }).join();
     }

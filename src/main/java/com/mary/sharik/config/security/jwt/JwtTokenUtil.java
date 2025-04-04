@@ -1,81 +1,93 @@
 package com.mary.sharik.config.security.jwt;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtBuilder;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import com.mary.sharik.exception.NoDataFoundException;
+import com.mary.sharik.model.entity.MyUser;
+import com.mary.sharik.model.enumClass.TokenType;
+import com.mary.sharik.repository.MyUserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
 import java.time.Duration;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Instant;
 
+@RequiredArgsConstructor
 @Component
 public class JwtTokenUtil {
 
-    @Value("${jwt.secret}")
-    private String secretKey;
+    private final JwtEncoder encoder;
+    private final JwtDecoder decoder;
+    private final MyUserRepository myUserRepository;
 
-    @Value("${max.age.access}")
-    private Duration expirationTimeAccess;
+    @Value("${jwt.access-token.expiry:PT1H}")
+    private Duration accessTokenExpiry;
 
-    @Value("${max.age.refresh}")
-    private Duration expirationTimeRefresh;
+    @Value("${jwt.refresh-token.expiry:P7D}")
+    private Duration refreshTokenExpiry;
+
+    @Value("${jwt.issuer:example.com}")
+    private String issuer;
 
     public String generateAccessToken(String id) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("id", id);
-        claims.put("token_type", "access");
-        return buildToken(claims, expirationTimeAccess);
+        Instant now = Instant.now();
+
+        MyUser user = myUserRepository.findById(id).orElseThrow(()->
+                new NoDataFoundException("no user found for id " + id));
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer(issuer)
+                .issuedAt(now)
+                .expiresAt(now.plus(accessTokenExpiry))
+                .subject(user.getId())
+                .claim("userId", user.getId())
+                .claim("type", TokenType.accessToken.name())
+                .build();
+
+        return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
     public String generateRefreshToken(String id) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("id", id);
-        claims.put("token_type", "refresh");
-        return buildToken(claims, expirationTimeRefresh);
+        Instant now = Instant.now();
+
+        MyUser user = myUserRepository.findById(id).orElseThrow(()->
+                new NoDataFoundException("no user found for id " + id));
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer(issuer)
+                .issuedAt(now)
+                .expiresAt(now.plus(refreshTokenExpiry))
+                .subject(user.getId())
+                .claim("userId", user.getId())
+                .claim("type", TokenType.refreshToken.name())
+                .build();
+
+        return this.encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
 
-    private String buildToken(Map<String, Object> claims, Duration expirationTimeRefresh) {
-        claims.put("iat", new Date());
-
-        claims.put("exp", new Date(System.currentTimeMillis() + expirationTimeRefresh.toMillis()));
-
-        SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
-        JwtBuilder builder = Jwts.builder().signWith(key);
-        claims.forEach(builder::claim);
-
-        return builder.compact();
-    }
-
-    public boolean isTokenExpired(String token) {
+    public boolean isTokenNotValid(String token) {
         try {
-            SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
-
-            Claims claims = Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token).getPayload();
-
-            return claims.getExpiration().before(new Date());
+            Jwt jwt = decoder.decode(token);
+            return jwt.getExpiresAt().isBefore(Instant.now());
         } catch (Exception e) {
-            return true;
+            return false;
         }
     }
 
-    public Claims extractAllClaims(String token) {
+    public String getUserIdFromToken(String token) throws JwtException {
         try {
-            SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes());
+            Jwt jwt = decoder.decode(token);
+            Object userId = jwt.getClaim("userId");
 
-            return Jwts.parser()
-                    .verifyWith(key)
-                    .build()
-                    .parseSignedClaims(token).getPayload();
+            if (userId == null) {
+                throw new JwtException("no userId found");
+            }
+
+            return (String) userId;
+        } catch (JwtException e) {
+            throw e;
         } catch (Exception e) {
-            return null;
+            throw new JwtException("exception while parsing token: " + e.getMessage(), e);
         }
     }
 }
