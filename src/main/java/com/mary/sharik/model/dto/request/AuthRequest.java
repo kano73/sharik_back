@@ -1,4 +1,4 @@
-package com.mary.sharik.model.jwt;
+package com.mary.sharik.model.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

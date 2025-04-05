@@ -5,12 +5,15 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.mary.sharik.config.security.jwt.JwtTokenUtil;
+import com.mary.sharik.exception.NoDataFoundException;
 import com.mary.sharik.exception.ValidationFailedException;
+import com.mary.sharik.model.dto.request.AuthRequest;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.enumClass.TokenType;
-import com.mary.sharik.model.jwt.AuthRequest;
+import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +21,7 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,6 +29,7 @@ import java.security.GeneralSecurityException;
 import java.time.Duration;
 import java.util.Collections;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 @Getter
@@ -33,14 +38,7 @@ public class AuthService {
     private final MyUserService myUserService;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
-
-    private final GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-            new NetHttpTransport(),
-            GsonFactory.getDefaultInstance()
-    )
-            .setAudience(Collections.singletonList("your-google-client-id")) // Замените на ваш Client ID
-            .build();
-
+    private final JwtDecoder jwtDecoder;
 
     @Value("${max.age.access}")
     private Duration expirationTimeAccess;
@@ -48,32 +46,38 @@ public class AuthService {
     @Value("${max.age.refresh}")
     private Duration expirationTimeRefresh;
 
-    public ResponseEntity<?> loginWithGoogleIdToken(String idTokenString) {
+    private GoogleIdTokenVerifier verifier;
+
+    @Value("${spring.security.oauth2.client.registration.google.client-id}")
+    private String GOOGLE_CLIENT_ID;
+
+    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
+    private String GOOGLE_CLIENT_SECRET;
+
+    @PostConstruct
+    public void init() {
+        verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
+                GsonFactory.getDefaultInstance()).setAudience(Collections.singletonList(GOOGLE_CLIENT_ID)).build();
+    }
+
+    public ResponseEntity<?> loginWithGoogleIdToken(String token) {
         try {
-            // Проверяем и парсим ID Token
-            GoogleIdToken idToken = verifier.verify(idTokenString);
+            GoogleIdToken idToken = verifier.verify(token);
+
             if (idToken == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Google ID token");
+                throw new ValidationFailedException("");
             }
 
-            // Извлекаем данные пользователя
             GoogleIdToken.Payload payload = idToken.getPayload();
+
             String email = payload.getEmail();
-            if (email == null) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Email not found in token");
-            }
 
-            // Находим или создаем пользователя
+
             MyUser user = myUserService.findByEmail(email);
-            if (user == null) {
-                throw new ValidationFailedException("You need to register");
-            }
 
-            // Генерируем токены
             return generateTokensWithId(user.getId());
-
-        } catch (GeneralSecurityException | IOException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Error login: " + e.getMessage());
+        } catch (ValidationFailedException | NoDataFoundException | GeneralSecurityException | IOException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Please register");
         }
     }
 
@@ -95,21 +99,11 @@ public class AuthService {
     }
 
     public ResponseCookie tokenToCookie(String token, TokenType type) {
-        if(type==TokenType.accessToken){
-            return ResponseCookie.from(type.toString(), token)
-                    .httpOnly(true)
-                    .path("/")
-                    .maxAge(expirationTimeAccess)
-                    .sameSite("Strict")
-                    .build();
-        }else if(type==TokenType.refreshToken){
-            return ResponseCookie.from(type.toString(), token)
-                    .httpOnly(true)
-                    .path("/")
-                    .maxAge(expirationTimeRefresh)
-                    .sameSite("Strict")
-                    .build();
-        }else{
+        if (type == TokenType.accessToken) {
+            return ResponseCookie.from(type.toString(), token).httpOnly(true).path("/").maxAge(expirationTimeAccess).sameSite("Strict").build();
+        } else if (type == TokenType.refreshToken) {
+            return ResponseCookie.from(type.toString(), token).httpOnly(true).path("/").maxAge(expirationTimeRefresh).sameSite("Strict").build();
+        } else {
             throw new ValidationFailedException("Unknown type");
         }
     }
@@ -119,10 +113,7 @@ public class AuthService {
 
         ResponseCookie refreshCookie = tokenToCookie(newRefreshToken, TokenType.refreshToken);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body("Login successful");
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessCookie.toString()).header(HttpHeaders.SET_COOKIE, refreshCookie.toString()).body("Login successful");
     }
 
     public ResponseEntity<?> logout() {
@@ -130,10 +121,7 @@ public class AuthService {
         ResponseCookie accessCookie = tokenToCookie("", TokenType.accessToken);
         ResponseCookie refreshCookie = tokenToCookie("", TokenType.refreshToken);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                .body("Logged out");
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessCookie.toString()).header(HttpHeaders.SET_COOKIE, refreshCookie.toString()).body("Logged out");
     }
 
 }

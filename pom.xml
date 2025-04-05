@@ -65,11 +65,11 @@
 			<version>6.4.4</version>
 		</dependency>
 
-		<!-- OAuth2 -->
+		<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-oauth2-client -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
-			<version>3.4.0</version>
+			<version>3.4.4</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/com.google.api-client/google-api-client -->

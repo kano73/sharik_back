@@ -1,17 +1,17 @@
 package com.mary.sharik.controller;
 
-import com.mary.sharik.model.jwt.AuthRequest;
+import com.mary.sharik.model.dto.request.AuthRequest;
+import com.mary.sharik.model.dto.request.GoogleAuthRequest;
 import com.mary.sharik.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class AuthController {
@@ -24,8 +24,8 @@ public class AuthController {
     }
 
     @PostMapping("/auth/google")
-    public ResponseEntity<?> authenticateWithGoogle(@RequestBody Map<String, String> body) {
-        return authService.loginWithGoogleIdToken(body.get("token"));
+    public ResponseEntity<?> authenticateWithGoogle(@RequestBody GoogleAuthRequest request) {
+        return authService.loginWithGoogleIdToken(request.getToken());
     }
 
     @PostMapping("/logout")

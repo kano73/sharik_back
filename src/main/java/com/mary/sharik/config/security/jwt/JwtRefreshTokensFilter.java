@@ -12,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,11 +25,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.*;
 
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtRefreshTokensFilter extends OncePerRequestFilter {
 
-    private static final Set<String> ALLOWED_PATHS = Set.of("/login", "/register", "/logout");
+    private static final Set<String> ALLOWED_PATHS = Set.of(
+            "/login", "/register", "/logout",
+            "/auth/google", "/is_user_admin");
 
     private final JwtTokenUtil jwtTokenUtil;
     private final MyUserRepository myUserRepository;
@@ -37,6 +41,7 @@ public class JwtRefreshTokensFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+
         if (ALLOWED_PATHS.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
@@ -64,7 +69,6 @@ public class JwtRefreshTokensFilter extends OncePerRequestFilter {
             }
 
             String userId = jwtTokenUtil.getUserIdFromToken(refreshToken);
-
 
             token = jwtTokenUtil.generateAccessToken(userId);
 

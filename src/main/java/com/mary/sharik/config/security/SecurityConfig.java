@@ -28,6 +28,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
@@ -58,8 +59,8 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/register", "/logout",
-                                "/is_user_admin", "/products", "/product").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login", "/register", "/products").permitAll()
+                                "/is_user_admin", "/products", "/product","/auth/google").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login", "/register", "/products","/auth/google").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -73,7 +74,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(auth -> auth
-                                .baseUri("/oauth2/authorize"))
+                                .baseUri("/auth/google"))
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(oAuth2UserService(myUserValidationService))))
                 .addFilterBefore(jwtRefreshTokensFilter, UsernamePasswordAuthenticationFilter.class)
