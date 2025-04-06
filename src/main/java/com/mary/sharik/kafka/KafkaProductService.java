@@ -29,7 +29,6 @@ public class KafkaProductService {
 
     @SneakyThrows
     public List<Product> requestProductsByFilter(ProductSearchFilterDTO filter) {
-        // Преобразуем фильтр в JSON
         String valueJson = objectMapper.writeValueAsString(filter);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
@@ -52,7 +51,6 @@ public class KafkaProductService {
 
     @SneakyThrows
     public Boolean createProduct(AddProductDTO dto) {
-        // Преобразуем фильтр в JSON
         String valueJson = objectMapper.writeValueAsString(dto);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
@@ -73,7 +71,6 @@ public class KafkaProductService {
 
     @SneakyThrows
     public Product requestProductsById(String id) {
-        // Преобразуем фильтр в JSON
         String valueJson = objectMapper.writeValueAsString(id);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
@@ -94,7 +91,6 @@ public class KafkaProductService {
 
     @SneakyThrows
     public boolean setProductStatus(@Valid @NotNull SetProductStatusDTO dto) {
-        // Преобразуем фильтр в JSON
         String valueJson = objectMapper.writeValueAsString(dto);
 
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =

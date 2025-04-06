@@ -6,11 +6,13 @@ import com.mary.sharik.model.dto.responce.MyUserPublicInfoDTO;
 import com.mary.sharik.service.MyUserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 public class MyUserController {
@@ -25,6 +27,7 @@ public class MyUserController {
 
     @GetMapping("/profile")
     public MyUserPublicInfoDTO getProfile(){
+        log.info("get profile");
         return myUserService.getUserInfo();
     }
 

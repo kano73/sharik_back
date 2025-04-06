@@ -52,15 +52,18 @@ public class SecurityConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder,
                                                    JwtRefreshTokensFilter jwtRefreshTokensFilter,
-                                                   MyUserValidationService myUserValidationService)
+                                                   MyUserValidationService myUserValidationService,
+                                                   CustomOAuth2FailureHandler customOAuth2FailureHandler,
+                                                   AuthFailHandler authFailHandler)
             throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login", "/register", "/logout",
-                                "/is_user_admin", "/products", "/product","/auth/google").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login", "/register", "/products","/auth/google").permitAll()
+                                "/products", "/product","/auth/google").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/login", "/register",
+                                "/products","/auth/google").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -68,15 +71,16 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt
-                                .decoder(jwtDecoder)
-                        )
+                        .jwt(jwt -> jwt.decoder(jwtDecoder))
+                        .authenticationEntryPoint(authFailHandler)
                 )
                 .oauth2Login(oauth2 -> oauth2
                         .authorizationEndpoint(auth -> auth
                                 .baseUri("/auth/google"))
                         .userInfoEndpoint(userInfo -> userInfo
-                                .userService(oAuth2UserService(myUserValidationService))))
+                                .userService(oAuth2UserService(myUserValidationService)))
+                        .failureHandler(customOAuth2FailureHandler)
+                )
                 .addFilterBefore(jwtRefreshTokensFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(AbstractHttpConfigurer::disable);
 

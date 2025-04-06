@@ -51,9 +51,6 @@ public class AuthService {
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String GOOGLE_CLIENT_ID;
 
-    @Value("${spring.security.oauth2.client.registration.google.client-secret}")
-    private String GOOGLE_CLIENT_SECRET;
-
     @PostConstruct
     public void init() {
         verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
@@ -100,9 +97,11 @@ public class AuthService {
 
     public ResponseCookie tokenToCookie(String token, TokenType type) {
         if (type == TokenType.accessToken) {
-            return ResponseCookie.from(type.toString(), token).httpOnly(true).path("/").maxAge(expirationTimeAccess).sameSite("Strict").build();
+            return ResponseCookie.from(type.toString(), token).httpOnly(true)
+                    .path("/").maxAge(expirationTimeAccess).sameSite("Strict").build();
         } else if (type == TokenType.refreshToken) {
-            return ResponseCookie.from(type.toString(), token).httpOnly(true).path("/").maxAge(expirationTimeRefresh).sameSite("Strict").build();
+            return ResponseCookie.from(type.toString(), token).httpOnly(true)
+                    .path("/").maxAge(expirationTimeRefresh).sameSite("Strict").build();
         } else {
             throw new ValidationFailedException("Unknown type");
         }
