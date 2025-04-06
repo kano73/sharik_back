@@ -3,6 +3,7 @@ package com.mary.sharik.exception.handler;
 import com.mary.sharik.exception.CustomHandleRuntimeException;
 import com.mary.sharik.exception.MicroserviceExternalException;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.oauth2.jwt.BadJwtException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.NoHandlerFoundException;
@@ -24,6 +25,12 @@ public class ExceptionHandlerController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public String externalExceptionOnMicroservice(MicroserviceExternalException exception){
         return exception.getMessage();
+    }
+
+    @ExceptionHandler(BadJwtException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public String handleJwtError() {
+        return "Please login";
     }
 
     @ExceptionHandler(CustomHandleRuntimeException.class)

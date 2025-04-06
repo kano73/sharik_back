@@ -27,7 +27,6 @@ public class MyUserController {
 
     @GetMapping("/profile")
     public MyUserPublicInfoDTO getProfile(){
-        log.info("get profile");
         return myUserService.getUserInfo();
     }
 

@@ -32,7 +32,7 @@ public class JwtRefreshTokensFilter extends OncePerRequestFilter {
 
     private static final Set<String> ALLOWED_PATHS = Set.of(
             "/login", "/register", "/logout",
-            "/auth/google", "/is_user_admin");
+            "/auth/google");
 
     private final JwtTokenUtil jwtTokenUtil;
     private final MyUserRepository myUserRepository;

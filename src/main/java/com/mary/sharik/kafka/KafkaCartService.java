@@ -124,9 +124,6 @@ public class KafkaCartService {
     @SneakyThrows
     public List<ProductAndQuantity> findCart() {
         MyUser user = authenticatedMyUserService.getCurrentUserAuthenticated();
-
-        log.info("id for cart: {}", user.getId());
-
         return getCartOfUserById(user.getId());
     }
 

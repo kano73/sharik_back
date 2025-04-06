@@ -40,7 +40,6 @@ public class CartController {
 
     @GetMapping("/cart")
     public List<ProductAndQuantity> getActiveCart() {
-        log.info("got request to get cart");
         return kafkaCartService.findCart();
     }
 }
