@@ -33,7 +33,7 @@ public class MyUserService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticatedMyUserService authenticatedMyUserService;
 
-    public void register(MyUserRegisterDTO dto){
+    public void register(@Valid MyUserRegisterDTO dto){
         MyUser myUser = new MyUser();
         myUser.setFirstName(dto.getFirstName());
         myUser.setLastName(dto.getLastName());
@@ -75,8 +75,7 @@ public class MyUserService {
     }
 
     public List<MyUserPublicInfoDTO> getUsersByFilters(@NotNull MyUserSearchFilterDTO filter) {
-        return myUserRepository.
-                findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCaseOrId(
+        return myUserRepository.findByFilters(
                         filter.getFirstOrLastName(),
                         filter.getFirstOrLastName(),
                         filter.getEmail(),

@@ -5,16 +5,14 @@ import com.mary.sharik.exception.NoDataFoundException;
 import com.mary.sharik.exception.ValidationFailedException;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.repository.MyUserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+@RequiredArgsConstructor
 @Service
 public class MyUserValidationService {
     private final MyUserRepository myUserRepository;
-
-    public MyUserValidationService(MyUserRepository myUserRepository) {
-        this.myUserRepository = myUserRepository;
-    }
 
     public void credentialsUniqueOrThrow(MyUser myUser) {
         if(myUserRepository.existsByEmailEqualsIgnoreCase(myUser.getEmail())){

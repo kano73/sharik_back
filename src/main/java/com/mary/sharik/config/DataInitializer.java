@@ -35,5 +35,4 @@ public class DataInitializer implements ApplicationRunner {
             userRepository.save(admin);
         }
     }
-
 }
