@@ -50,6 +50,9 @@ public class ProductSearchFilterDTO {
         this.sortDirection = (sortDirection == null) ? Sort.Direction.ASC : sortDirection;
     }
 
+    public ProductSearchFilterDTO() {
+    }
+
     @Override
     public String toString() {
         return "ProductSearchFilterDTO{" +

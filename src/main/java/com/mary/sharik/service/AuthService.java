@@ -126,5 +126,4 @@ public class AuthService {
                 .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshCookie.toString()).body("Logged out");
     }
-
 }

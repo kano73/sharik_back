@@ -30,23 +30,19 @@ public class KafkaHistoryService {
     public List<OrdersHistory> getWholeHistory(@Min(1) Integer page) {
         String valueJson = objectMapper.writeValueAsString(page);
 
-        CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopic.HISTORY_ALL_TOPIC.name(), valueJson);
+        CompletableFuture<ConsumerRecord<String, String>> futureResponse = kafkaRequesterService.makeRequest(KafkaTopic.HISTORY_ALL_TOPIC.name(), valueJson);
 
-        return (List<OrdersHistory>) futureResponse
-                .thenApply(response -> {
-                    try {
-                        CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, OrdersHistory.class);
-                        return objectMapper.readValue(response.value(), listType);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return (List<OrdersHistory>) futureResponse.thenApply(response -> {
+            try {
+                CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, OrdersHistory.class);
+                return objectMapper.readValue(response.value(), listType);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
-
 
     @SneakyThrows
     public OrdersHistory findHistory() {
@@ -56,22 +52,19 @@ public class KafkaHistoryService {
     }
 
     @SneakyThrows
-    public OrdersHistory getOrdersHistoryByUserId(String userId){
+    public OrdersHistory getOrdersHistoryByUserId(String userId) {
         String valueJson = objectMapper.writeValueAsString(userId);
 
-        CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopic.HISTORY_VIEW_TOPIC.name(), valueJson);
+        CompletableFuture<ConsumerRecord<String, String>> futureResponse = kafkaRequesterService.makeRequest(KafkaTopic.HISTORY_VIEW_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), OrdersHistory.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), OrdersHistory.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 }
