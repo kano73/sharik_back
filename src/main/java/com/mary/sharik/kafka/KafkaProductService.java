@@ -31,81 +31,73 @@ public class KafkaProductService {
     public List<Product> requestProductsByFilter(ProductSearchFilterDTO filter) {
         String valueJson = objectMapper.writeValueAsString(filter);
 
-        CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_BY_FILTER_TOPIC.name(), valueJson);
+        CompletableFuture<ConsumerRecord<String, String>> futureResponse = kafkaRequesterService
+                .makeRequest(KafkaTopic.PRODUCT_BY_FILTER_TOPIC.name(), valueJson);
 
-        return (List<Product>) futureResponse
-                .thenApply(response -> {
+        return (List<Product>) futureResponse.thenApply(response -> {
 
-                    CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class);
-                    try {
-                        return objectMapper.readValue(response.value(), listType);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+            CollectionType listType = objectMapper.getTypeFactory().constructCollectionType(List.class, Product.class);
+            try {
+                return objectMapper.readValue(response.value(), listType);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 
     @SneakyThrows
     public Boolean createProduct(AddProductDTO dto) {
         String valueJson = objectMapper.writeValueAsString(dto);
 
-        CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_CREATE_TOPIC.name(), valueJson);
+        CompletableFuture<ConsumerRecord<String, String>> futureResponse = kafkaRequesterService
+                .makeRequest(KafkaTopic.PRODUCT_CREATE_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), Boolean.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), Boolean.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 
     @SneakyThrows
     public Product requestProductsById(String id) {
         String valueJson = objectMapper.writeValueAsString(id);
 
-        CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_BY_ID_TOPIC.name(), valueJson);
+        CompletableFuture<ConsumerRecord<String, String>> futureResponse = kafkaRequesterService
+                .makeRequest(KafkaTopic.PRODUCT_BY_ID_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), Product.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), Product.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 
     @SneakyThrows
     public boolean setProductStatus(@Valid @NotNull SetProductStatusDTO dto) {
         String valueJson = objectMapper.writeValueAsString(dto);
 
-        CompletableFuture<ConsumerRecord<String, String>> futureResponse =
-                kafkaRequesterService.makeRequest(KafkaTopic.PRODUCT_SET_STATUS_TOPIC.name(), valueJson);
+        CompletableFuture<ConsumerRecord<String, String>> futureResponse = kafkaRequesterService
+                .makeRequest(KafkaTopic.PRODUCT_SET_STATUS_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), Boolean.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), Boolean.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 }

@@ -25,15 +25,14 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Service
 public class MyUserService {
-    @Value("${page.size.product}")
-    private Integer PAGE_SIZE;
-
     private final MyUserValidationService myUserValidationService;
     private final MyUserRepository myUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticatedMyUserService authenticatedMyUserService;
+    @Value("${page.size.product}")
+    private Integer PAGE_SIZE;
 
-    public void register(@Valid MyUserRegisterDTO dto){
+    public void register(@Valid MyUserRegisterDTO dto) {
         MyUser myUser = new MyUser();
         myUser.setFirstName(dto.getFirstName());
         myUser.setLastName(dto.getLastName());
@@ -48,19 +47,18 @@ public class MyUserService {
     }
 
     public MyUser findByEmail(String email) {
-        return myUserRepository.findByEmailEqualsIgnoreCase(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found : " + email));
+        return myUserRepository.findByEmailEqualsIgnoreCase(email).orElseThrow(() ->
+                new UsernameNotFoundException("User not found : " + email));
     }
 
-    public MyUserPublicInfoDTO getUserInfo(){
+    public MyUserPublicInfoDTO getUserInfo() {
         MyUser user = authenticatedMyUserService.getCurrentUserAuthenticated();
-        return getUsersInfoById(user.getId());
+        return MyUserPublicInfoDTO.fromUser(user);
     }
 
     public MyUserPublicInfoDTO getUsersInfoById(@NotBlank String userId) {
-        MyUser myUser = myUserRepository.findById(userId).orElseThrow(
-                () -> new NoDataFoundException("no user found with id:" + userId)
-        );
+        MyUser myUser = myUserRepository.findById(userId).orElseThrow(() ->
+                new NoDataFoundException("no user found with id:" + userId));
         return MyUserPublicInfoDTO.fromUser(myUser);
     }
 
@@ -76,19 +74,18 @@ public class MyUserService {
 
     public List<MyUserPublicInfoDTO> getUsersByFilters(@NotNull MyUserSearchFilterDTO filter) {
         return myUserRepository.findByFilters(
-                        filter.getFirstOrLastName(),
-                        filter.getFirstOrLastName(),
-                        filter.getEmail(),
-                        filter.getId(),
-                        PageRequest.of(filter.getPage()-1 , PAGE_SIZE)
-                ).stream().map(MyUserPublicInfoDTO::fromUser).collect(Collectors.toList());
+                filter.getFirstOrLastName(),
+                filter.getFirstOrLastName(),
+                filter.getEmail(),
+                filter.getId(),
+                PageRequest.of(filter.getPage() - 1, PAGE_SIZE))
+                .stream().map(MyUserPublicInfoDTO::fromUser).collect(Collectors.toList());
     }
 
     public boolean isUserAdmin() {
         try {
             return authenticatedMyUserService.getCurrentUserAuthenticated().getRole().equals(Role.ADMIN);
-        }
-        catch (NoDataFoundException e) {
+        } catch (NoDataFoundException e) {
             return false;
         }
     }

@@ -15,7 +15,7 @@ import java.time.Duration;
 
 @Configuration
 public class KafkaConfig {
-//product
+    //product
     @Bean
     public NewTopic productsByFilter() {
         return TopicBuilder.name(KafkaTopic.PRODUCT_BY_FILTER_TOPIC.name())
@@ -58,16 +58,15 @@ public class KafkaConfig {
     public NewTopic cartEmptyTopic() {
         return TopicBuilder.name(KafkaTopic.CART_EMPTY_TOPIC.name())
                 .partitions(1)
-                .replicas(1)
-                .config("retention.ms", "3600000") // 1 час
+                .replicas(1).
+                config("retention.ms", "3600000") // 1 час
                 .build();
     }
 
     @Bean
     public NewTopic cartAddTopic() {
         return TopicBuilder.name(KafkaTopic.CART_ADD_TOPIC.name())
-                .partitions(1)
-                .replicas(1)
+                .partitions(1).replicas(1)
                 .config("retention.ms", "3600000") // 1 час
                 .build();
     }
@@ -111,27 +110,21 @@ public class KafkaConfig {
     @Bean
     public NewTopic historyAllTopic() {
         return TopicBuilder.name(KafkaTopic.HISTORY_ALL_TOPIC.name())
-                .partitions(1)
-                .replicas(1)
+                .partitions(1).replicas(1)
                 .config("retention.ms", "7200000")
                 .build();
     }
 
     @Bean
     public ReplyingKafkaTemplate<String, String, String>
-    replyingKafkaTemplate(
-            ProducerFactory<String, String> pf,
-            KafkaMessageListenerContainer<String, String> container)
-    {
+    replyingKafkaTemplate(ProducerFactory<String, String> pf, KafkaMessageListenerContainer<String, String> container) {
         ReplyingKafkaTemplate<String, String, String> template = new ReplyingKafkaTemplate<>(pf, container);
         template.setDefaultReplyTimeout(Duration.ofSeconds(10));
         return template;
     }
 
     @Bean
-    public KafkaMessageListenerContainer<String, String>
-    replyContainer(ConsumerFactory<String, String> cf)
-    {
+    public KafkaMessageListenerContainer<String, String> replyContainer(ConsumerFactory<String, String> cf) {
         ContainerProperties containerProperties = new ContainerProperties(KafkaTopic.PRODUCT_REPLY_TOPIC.name());
 
         return new KafkaMessageListenerContainer<>(cf, containerProperties);

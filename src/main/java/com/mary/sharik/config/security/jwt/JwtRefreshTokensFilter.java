@@ -23,24 +23,27 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Set;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class JwtRefreshTokensFilter extends OncePerRequestFilter {
 
-    private static final Set<String> ALLOWED_PATHS = Set.of(
-            "/login", "/register", "/logout",
-            "/auth/google");
+    private static final Set<String> ALLOWED_PATHS = Set.of("/login", "/register", "/logout", "/auth/google");
 
     private final JwtTokenUtil jwtTokenUtil;
     private final MyUserRepository myUserRepository;
     private final AuthService authService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         if (ALLOWED_PATHS.contains(request.getRequestURI())) {
             filterChain.doFilter(request, response);
@@ -54,16 +57,16 @@ public class JwtRefreshTokensFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = Arrays.stream(cookies).filter(item->
-                        item.getName().equals(TokenType.accessToken.name()))
+        String token = Arrays.stream(cookies).filter(item ->
+                item.getName().equals(TokenType.accessToken.name()))
                 .findFirst().map(Cookie::getValue).orElse(null);
 
-        if(jwtTokenUtil.isTokenNotValid(token)){
-            final String refreshToken = Arrays.stream(cookies).filter(item->
-                            item.getName().equals("refreshToken"))
+        if (jwtTokenUtil.isTokenNotValid(token)) {
+            final String refreshToken = Arrays.stream(cookies).filter(item ->
+                    item.getName().equals("refreshToken"))
                     .findFirst().map(Cookie::getValue).orElse(null);
 
-            if(jwtTokenUtil.isTokenNotValid(refreshToken)){
+            if (jwtTokenUtil.isTokenNotValid(refreshToken)) {
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -72,10 +75,9 @@ public class JwtRefreshTokensFilter extends OncePerRequestFilter {
 
             token = jwtTokenUtil.generateAccessToken(userId);
 
-            ResponseCookie accessCookie = authService.tokenToCookie
-                    (token, TokenType.accessToken);
-            ResponseCookie refreshCookie = authService.tokenToCookie
-                    (jwtTokenUtil.generateRefreshToken(userId), TokenType.refreshToken);
+            ResponseCookie accessCookie = authService.tokenToCookie(token, TokenType.accessToken);
+            ResponseCookie refreshCookie =
+                    authService.tokenToCookie(jwtTokenUtil.generateRefreshToken(userId), TokenType.refreshToken);
 
             response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
@@ -85,15 +87,13 @@ public class JwtRefreshTokensFilter extends OncePerRequestFilter {
         if (SecurityContextHolder.getContext().getAuthentication() == null) {
             String userId = jwtTokenUtil.getUserIdFromToken(token);
 
-            MyUser user = myUserRepository.findById(userId).orElseThrow(
-                    ()-> new NoDataFoundException("No user found with id " + userId)
-            );
+            MyUser user = myUserRepository.findById(userId).orElseThrow(() ->
+                    new NoDataFoundException("No user found with id " + userId));
 
             String role = user.getRole().name();
 
-            Collection<SimpleGrantedAuthority> authorities = Collections.singleton(
-                    new SimpleGrantedAuthority("ROLE_" + role)
-            );
+            Collection<SimpleGrantedAuthority> authorities =
+                    Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role));
 
             UsernamePasswordAuthenticationToken authentication =
                     new UsernamePasswordAuthenticationToken(new MyUserDetails(user), null, authorities);

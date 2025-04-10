@@ -14,10 +14,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class DataInitializer implements ApplicationRunner {
 
-    @Value("${admin.password}")
-    private String password;
     private final MyUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    @Value("${admin.password}")
+    private String password;
 
     @Override
     public void run(ApplicationArguments args) {

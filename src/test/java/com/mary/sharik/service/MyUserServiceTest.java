@@ -10,7 +10,6 @@ import com.mary.sharik.model.dto.responce.MyUserPublicInfoDTO;
 import com.mary.sharik.model.entity.MyUser;
 import com.mary.sharik.model.enumClass.Role;
 import com.mary.sharik.repository.MyUserRepository;
-import jakarta.xml.bind.ValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -112,16 +111,33 @@ class MyUserServiceTest{
                 myUserService.findByEmail("notfound@mail.com"));
     }
 
-
     @Test
     void getUserInfo_success() {
         myUser.setId("123");
         when(authenticatedMyUserService.getCurrentUserAuthenticated()).thenReturn(myUser);
-        when(myUserRepository.findById("123")).thenReturn(Optional.of(myUser));
 
         MyUserPublicInfoDTO dto = myUserService.getUserInfo();
 
         assertEquals(myUser.getEmail(), dto.email());
+    }
+
+    @Test
+    void getUserInfoById_success() {
+        myUser.setId("123");
+        when(myUserRepository.findById("123")).thenReturn(Optional.of(myUser));
+
+        MyUserPublicInfoDTO dto = myUserService.getUsersInfoById(myUser.getId());
+
+        assertEquals(myUser.getEmail(), dto.email());
+    }
+
+    @Test
+    void getUserInfoById_throwsException() {
+        myUser.setId("123");
+        when(myUserRepository.findById("123")).thenReturn(Optional.empty());
+
+        assertThrows(NoDataFoundException.class, () ->
+                myUserService.getUsersInfoById(myUser.getId()));
     }
 
     @Test

@@ -31,7 +31,7 @@ public class KafkaCartService {
     private final AuthenticatedMyUserService authenticatedMyUserService;
 
     @SneakyThrows
-    public boolean emptyCart(){
+    public boolean emptyCart() {
         MyUser user = authenticatedMyUserService.getCurrentUserAuthenticated();
 
         String valueJson = objectMapper.writeValueAsString(user.getId());
@@ -39,17 +39,15 @@ public class KafkaCartService {
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
                 kafkaRequesterService.makeRequest(KafkaTopic.CART_EMPTY_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), Boolean.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), Boolean.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 
     @SneakyThrows
@@ -62,17 +60,15 @@ public class KafkaCartService {
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
                 kafkaRequesterService.makeRequest(KafkaTopic.CART_ADD_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), Boolean.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), Boolean.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 
     @SneakyThrows
@@ -85,17 +81,15 @@ public class KafkaCartService {
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
                 kafkaRequesterService.makeRequest(KafkaTopic.CART_CHANGE_AMOUNT_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), Boolean.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), Boolean.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 
     @SneakyThrows
@@ -108,17 +102,15 @@ public class KafkaCartService {
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
                 kafkaRequesterService.makeRequest(KafkaTopic.CART_ORDER_TOPIC.name(), valueJson);
 
-        return futureResponse
-                .thenApply(response -> {
-                    try {
-                        return objectMapper.readValue(response.value(), Boolean.class);
-                    } catch (JsonProcessingException e) {
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return futureResponse.thenApply(response -> {
+            try {
+                return objectMapper.readValue(response.value(), Boolean.class);
+            } catch (JsonProcessingException e) {
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 
     @SneakyThrows
@@ -134,19 +126,17 @@ public class KafkaCartService {
         CompletableFuture<ConsumerRecord<String, String>> futureResponse =
                 kafkaRequesterService.makeRequest(KafkaTopic.CART_VIEW_TOPIC.name(), valueJson);
 
-        return (List<ProductAndQuantity>) futureResponse
-                .thenApply(response -> {
-                    CollectionType listType = objectMapper.getTypeFactory()
-                            .constructCollectionType(List.class, ProductAndQuantity.class);
-                    try {
-                        return objectMapper.readValue(response.value(), listType);
-                    } catch (JsonProcessingException e) {
-                        log.error(String.valueOf(e));
-                        throw new ValidationFailedException(e);
-                    }
-                })
-                .exceptionally(ex -> {
-                    throw new MicroserviceExternalException(ex.getMessage());
-                }).join();
+        return (List<ProductAndQuantity>) futureResponse.thenApply(response -> {
+            CollectionType listType =
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, ProductAndQuantity.class);
+            try {
+                return objectMapper.readValue(response.value(), listType);
+            } catch (JsonProcessingException e) {
+                log.error(String.valueOf(e));
+                throw new ValidationFailedException(e);
+            }
+        }).exceptionally(ex -> {
+            throw new MicroserviceExternalException(ex.getMessage());
+        }).join();
     }
 }

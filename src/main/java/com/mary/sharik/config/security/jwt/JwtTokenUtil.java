@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Objects;
 
 @RequiredArgsConstructor
 @Component
@@ -32,7 +33,7 @@ public class JwtTokenUtil {
     public String generateAccessToken(String id) {
         Instant now = Instant.now();
 
-        MyUser user = myUserRepository.findById(id).orElseThrow(()->
+        MyUser user = myUserRepository.findById(id).orElseThrow(() ->
                 new NoDataFoundException("no user found for id " + id));
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
@@ -50,15 +51,14 @@ public class JwtTokenUtil {
     public String generateRefreshToken(String id) {
         Instant now = Instant.now();
 
-        MyUser user = myUserRepository.findById(id).orElseThrow(()->
+        MyUser user = myUserRepository.findById(id).orElseThrow(() ->
                 new NoDataFoundException("no user found for id " + id));
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer(issuer)
                 .issuedAt(now)
                 .expiresAt(now.plus(refreshTokenExpiry))
-                .subject(user.getId())
-                .claim("userId", user.getId())
+                .subject(user.getId()).claim("userId", user.getId())
                 .claim("type", TokenType.refreshToken.name())
                 .build();
 
@@ -68,7 +68,7 @@ public class JwtTokenUtil {
     public boolean isTokenNotValid(String token) {
         try {
             Jwt jwt = decoder.decode(token);
-            return jwt.getExpiresAt().isBefore(Instant.now());
+            return Objects.requireNonNull(jwt.getExpiresAt()).isBefore(Instant.now());
         } catch (Exception e) {
             return false;
         }

@@ -27,7 +27,6 @@ public class MyUserValidationService {
             throw new ValidationFailedException("");
         }
 
-        myUserRepository.findByEmailEqualsIgnoreCase(email).orElseThrow(() ->
-                new NoDataFoundException("No user with email: " + email));
+        myUserRepository.findByEmailEqualsIgnoreCase(email).orElseThrow(() -> new NoDataFoundException("No user with email: " + email));
     }
 }

@@ -53,8 +53,7 @@ public class AuthService {
 
     @PostConstruct
     public void init() {
-        verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(),
-                GsonFactory.getDefaultInstance()).setAudience(Collections.singletonList(GOOGLE_CLIENT_ID)).build();
+        verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), GsonFactory.getDefaultInstance()).setAudience(Collections.singletonList(GOOGLE_CLIENT_ID)).build();
     }
 
     public ResponseEntity<?> loginWithGoogleIdToken(String token) {
@@ -91,17 +90,9 @@ public class AuthService {
 
     public ResponseCookie tokenToCookie(String token, TokenType type) {
         if (type == TokenType.accessToken) {
-            return ResponseCookie.from(type.toString(), token)
-                    .httpOnly(true)
-                    .path("/")
-                    .maxAge(expirationTimeAccess)
-                    .sameSite("Strict").build();
+            return ResponseCookie.from(type.toString(), token).httpOnly(true).path("/").maxAge(expirationTimeAccess).sameSite("Strict").build();
         } else if (type == TokenType.refreshToken) {
-            return ResponseCookie.from(type.toString(), token)
-                    .httpOnly(true)
-                    .path("/")
-                    .maxAge(expirationTimeRefresh)
-                    .sameSite("Strict").build();
+            return ResponseCookie.from(type.toString(), token).httpOnly(true).path("/").maxAge(expirationTimeRefresh).sameSite("Strict").build();
         } else {
             throw new ValidationFailedException("Unknown type");
         }
@@ -112,9 +103,7 @@ public class AuthService {
 
         ResponseCookie refreshCookie = tokenToCookie(newRefreshToken, TokenType.refreshToken);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString()).header(
-                        HttpHeaders.SET_COOKIE, refreshCookie.toString()).body("Login successful");
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessCookie.toString()).header(HttpHeaders.SET_COOKIE, refreshCookie.toString()).body("Login successful");
     }
 
     public ResponseEntity<?> logout() {
@@ -122,8 +111,6 @@ public class AuthService {
         ResponseCookie accessCookie = tokenToCookie("", TokenType.accessToken);
         ResponseCookie refreshCookie = tokenToCookie("", TokenType.refreshToken);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString()).body("Logged out");
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, accessCookie.toString()).header(HttpHeaders.SET_COOKIE, refreshCookie.toString()).body("Logged out");
     }
 }

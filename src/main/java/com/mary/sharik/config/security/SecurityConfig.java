@@ -20,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -50,26 +50,23 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtDecoder jwtDecoder,
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   JwtDecoder jwtDecoder,
                                                    JwtRefreshTokensFilter jwtRefreshTokensFilter,
-                                                   AuthFailHandler authFailHandler)
-            throws Exception {
-        http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/register", "/logout", "/auth/google").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/login", "/register", "/auth/google").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
-                )
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.decoder(jwtDecoder))
-                        .authenticationEntryPoint(authFailHandler)
-                )
+                                                   AuthFailHandler authFailHandler) throws Exception {
+        http.csrf(AbstractHttpConfigurer::disable).cors(cors ->
+                cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth ->
+                        auth.requestMatchers("/login", "/register", "/logout", "/auth/google").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/login",
+                                        "/register", "/auth/google").permitAll()
+                                .requestMatchers("/admin/**").hasRole("ADMIN")
+                                .anyRequest().authenticated())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .oauth2ResourceServer(oauth2 ->
+                        oauth2.jwt(jwt -> jwt.decoder(jwtDecoder))
+                                .authenticationEntryPoint(authFailHandler))
                 .addFilterBefore(jwtRefreshTokensFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(AbstractHttpConfigurer::disable);
 
@@ -77,8 +74,8 @@ public class SecurityConfig implements WebMvcConfigurer {
     }
 
     @Bean
-    public OAuth2UserService<OAuth2UserRequest, OAuth2User> oAuth2UserService
-            (MyUserValidationService myUserValidationService) {
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User>
+    oAuth2UserService(MyUserValidationService myUserValidationService) {
         return new CustomOAuth2UserService(myUserValidationService);
     }
 

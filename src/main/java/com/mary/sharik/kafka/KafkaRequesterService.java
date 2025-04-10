@@ -28,15 +28,13 @@ public class KafkaRequesterService {
     public CompletableFuture<ConsumerRecord<String, String>> makeRequest(String topic, String value)
             throws MicroserviceExternalException {
         // Создаем сообщение с заголовком reply-topic
-        ProducerRecord<String, String> record =
-                new ProducerRecord<>(topic, value);
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, value);
 
         // Добавляем заголовок с correlation ID
         String correlationId = UUID.randomUUID().toString();
-        record.headers().add(new RecordHeader(KafkaHeaders.CORRELATION_ID,
-                correlationId.getBytes()));
-        record.headers().add(new RecordHeader(KafkaHeaders.REPLY_TOPIC,
-                KafkaTopic.PRODUCT_REPLY_TOPIC.name().getBytes()));
+        record.headers().add(new RecordHeader(KafkaHeaders.CORRELATION_ID, correlationId.getBytes()));
+        record.headers().add(
+                new RecordHeader(KafkaHeaders.REPLY_TOPIC, KafkaTopic.PRODUCT_REPLY_TOPIC.name().getBytes()));
 
 
         // Отправляем запрос и ожидаем ответ (с таймаутом 5 секунд)
@@ -51,9 +49,7 @@ public class KafkaRequesterService {
 
                 for (Header header : response.headers()) {
                     if (header.key().equals(KafkaHeaders.EXCEPTION_MESSAGE)) {
-                        throw new MicroserviceExternalException(
-                                new String(header.value(), StandardCharsets.UTF_8)
-                        );
+                        throw new MicroserviceExternalException(new String(header.value(), StandardCharsets.UTF_8));
                     }
                 }
                 return response;
