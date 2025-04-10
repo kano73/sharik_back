@@ -24,7 +24,7 @@ public class JwtConfig {
     private final RSAPublicKey publicKey;
     private final RSAPrivateKey privateKey;
 
-    @Value("${jwt.issuer}")
+    @Value("${jwt.issuer:https://example.com}")
     private String issuer;
 
     public JwtConfig(@Value("${jwt.public.key:#{null}}") RSAPublicKey publicKey,

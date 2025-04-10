@@ -29,7 +29,7 @@ public class MyUserService {
     private final MyUserRepository myUserRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticatedMyUserService authenticatedMyUserService;
-    @Value("${page.size.product}")
+    @Value("${page.size.product:9}")
     private Integer PAGE_SIZE;
 
     public void register(@Valid MyUserRegisterDTO dto) {

@@ -40,10 +40,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtDecoder jwtDecoder;
 
-    @Value("${max.age.access}")
+    @Value("${max.age.access:PT1H}")
     private Duration expirationTimeAccess;
 
-    @Value("${max.age.refresh}")
+    @Value("${max.age.refresh:P7D}")
     private Duration expirationTimeRefresh;
 
     private GoogleIdTokenVerifier verifier;

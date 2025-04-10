@@ -27,7 +27,7 @@ public class JwtTokenUtil {
     @Value("${jwt.refresh-token.expiry:P7D}")
     private Duration refreshTokenExpiry;
 
-    @Value("${jwt.issuer:example.com}")
+    @Value("${jwt.issuer:https://example.com}")
     private String issuer;
 
     public String generateAccessToken(String id) {

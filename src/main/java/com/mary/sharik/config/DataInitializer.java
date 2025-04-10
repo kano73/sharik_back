@@ -16,7 +16,7 @@ public class DataInitializer implements ApplicationRunner {
 
     private final MyUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    @Value("${admin.password}")
+    @Value("${admin.password:qweqwe}")
     private String password;
 
     @Override
